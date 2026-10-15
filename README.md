@@ -1,10 +1,52 @@
 # AlphaQuant - Market Intelligence API for AI Agents 🚀
 
-Microservicio en Python diseñado para ejecutarse como función **Serverless en Vercel**, entregando datos estructurados de opciones, volatilidad y niveles cuantitativos de mercado directamente a **Agentes de IA**, LLMs y sistemas algorítmicos.
+[![Production API](https://img.shields.io/badge/Production%20API-Online-success?style=for-the-badge&logo=vercel)](https://end-points.vercel.app/)
+[![Swagger Docs](https://img.shields.io/badge/Swagger-OpenAPI%20Docs-blue?style=for-the-badge&logo=swagger)](https://end-points.vercel.app/docs)
+[![Agent Protocol](https://img.shields.io/badge/LLMs.txt-Agent%20Ready-purple?style=for-the-badge)](https://end-points.vercel.app/llms.txt)
+
+Microservicio de alta velocidad y baja latencia que entrega datos cuantitativos estructurados de **opciones, volatilidad y recorrido esperado (0DTE/SPX)** directamente a **Agentes de IA**, LLMs y sistemas algorítmicos.
 
 ---
 
-## ⚡ Estructura del Proyecto
+## ⚡ Quickstart para Agentes y Desarrolladores (Zero Setup)
+
+La API pública se encuentra en producción y lista para ser consumida inmediatamente:
+
+### 1. Consultar Resumen Cuantitativo en Vivo (curl)
+```bash
+curl -s https://end-points.vercel.app/v1/market/summary | jq
+```
+
+### 2. Uso Directo en Python / Agentes
+```python
+import requests
+
+url = "https://end-points.vercel.app/v1/market/summary"
+headers = {"User-Agent": "MyTradingAgent/1.0"}
+
+data = requests.get(url, headers=headers).json()
+print(f"SPX Spot: {data['price']}")
+print(f"Rango 0DTE Esperado: {data['lower_bound']} - {data['upper_bound']}")
+print(f"Sesgo Previsto: {data['predicted_direction']} (Confianza: {data['predicted_strength']}%)")
+```
+
+---
+
+## 📡 Endpoints Públicos Disponibles
+
+| Endpoint | Descripción | Formato |
+| :--- | :--- | :---: |
+| `GET /v1/market/summary` | Resumen cuantitativo completo en 1 solo payload compacto | JSON |
+| `GET /v1/market/expected-move` | Spot, Expected Move calculado y bandas de volatilidad | JSON |
+| `GET /v1/market/regime` | Nivel de VIX, tendencia y sesgo direccional pronosticado | JSON |
+| `GET /v1/market/levels` | Centroide de reversión a la media y precio objetivo de cierre | JSON |
+| `GET /v1/telemetry/stats` | Métricas públicas agregadas de consumo y demanda | JSON |
+| `GET /llms.txt` | Manifiesto de descubrimiento estándar para agentes y LLMs | Texto plano |
+| `GET /docs` | Documentación interactiva Swagger / OpenAPI | UI |
+
+---
+
+## 🛠️ Estructura del Proyecto
 
 ```text
 .
