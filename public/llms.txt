@@ -3,6 +3,8 @@
 > Microservicio de alta velocidad y baja latencia para agentes de IA y traders algorítmicos.
 > Proporciona datos de régimen de volatilidad, recorrido esperado (0DTE/Daily Expected Move) y niveles cuantitativos de reversión a partir de análisis de opciones.
 
+> **Disclaimer:** AlphaQuant is an automated market data and quantitative modeling service provided strictly for educational, informational, and computational research purposes. None of the endpoints, metrics, or algorithmic outputs constitute financial, investment, legal, or trading advice. Trading options and financial instruments involves substantial risk of loss. Users and automated agents are solely responsible for their own trading decisions.
+
 ## Información General
 
 - **Base URL:** `/v1`
@@ -10,6 +12,7 @@
 - **Formato:** JSON estricto, ultra-compacto, optimizado para bajo consumo de tokens.
 - **Autenticación:** Abierta durante fase de sondeo (telemetría anónima activada).
 - **CORS:** Habilitado para todos los orígenes (`*`).
+- **Aviso Legal:** Uso exclusivo para propósitos educativos y computacionales. No constituye asesoría financiera.
 
 ---
 

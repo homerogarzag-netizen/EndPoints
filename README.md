@@ -109,3 +109,9 @@ Una vez desplegada tu API:
      ```
 3. **Pivote y Monetización:**
    - El endpoint con más volumen de llamadas de `ai_agent` y `python_client` es tu producto estrella para empaquetar con claves API de pago (mediante Zuplo, Unkey o Stripe).
+
+---
+
+## ⚖️ Legal Disclaimer
+
+> **Disclaimer:** AlphaQuant is an automated market data and quantitative modeling service provided strictly for educational, informational, and computational research purposes. None of the endpoints, metrics, or algorithmic outputs constitute financial, investment, legal, or trading advice. Trading options and financial instruments involves substantial risk of loss. Users and automated agents are solely responsible for their own trading decisions.

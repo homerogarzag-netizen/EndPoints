@@ -15,10 +15,21 @@ from api.models import (
 from api.db import get_latest_market_data, check_database_health, get_telemetry_stats
 from api.telemetry import record_telemetry
 
+DISCLAIMER = (
+    "Disclaimer: AlphaQuant is an automated market data and quantitative modeling service "
+    "provided strictly for educational, informational, and computational research purposes. "
+    "None of the endpoints, metrics, or algorithmic outputs constitute financial, investment, "
+    "legal, or trading advice. Trading options and financial instruments involves substantial "
+    "risk of loss. Users and automated agents are solely responsible for their own trading decisions."
+)
+
 app = FastAPI(
     title=API_TITLE,
     version=API_VERSION,
-    description="Microservicio de datos de mercado y opciones estructurados para consumo por Agentes de IA.",
+    description=(
+        "Microservicio de datos de mercado y opciones estructurados para consumo por Agentes de IA.\n\n"
+        f"**Legal Disclaimer:**\n> {DISCLAIMER}"
+    ),
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -78,7 +89,8 @@ async def root(request: Request, background_tasks: BackgroundTasks):
             "/v1/market/levels",
             "/v1/market/summary",
             "/v1/telemetry/stats"
-        ]
+        ],
+        "disclaimer": DISCLAIMER
     }
 
 
