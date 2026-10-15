@@ -4,6 +4,7 @@ from pathlib import Path
 from fastapi import FastAPI, Request, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse, RedirectResponse, JSONResponse, HTMLResponse
+from typing import Optional
 
 from api.config import API_TITLE, API_VERSION
 from api.models import (
@@ -11,9 +12,19 @@ from api.models import (
     RegimeResponse,
     LevelsResponse,
     MarketSummaryResponse,
-    HealthResponse
+    HealthResponse,
+    FeedbackRequest,
+    FeedbackResponse,
+    UnsupportedSymbolResponse
 )
-from api.db import get_latest_market_data, check_database_health, get_telemetry_stats
+from api.db import (
+    get_latest_market_data,
+    check_database_health,
+    get_telemetry_stats,
+    record_feedback,
+    get_feedback_summary,
+    to_ny_iso_timestamp
+)
 from api.telemetry import record_telemetry
 
 DISCLAIMER = (
@@ -70,6 +81,16 @@ def should_record_telemetry(request: Request) -> bool:
     return True
 
 
+def check_symbol_supported(symbol: Optional[str]) -> tuple[bool, str]:
+    """Valida si el ticker solicitado está cubierto o debe canalizarse como voto de demanda."""
+    if not symbol:
+        return True, "SPX"
+    clean = symbol.strip().upper()
+    if clean in ["SPX", "^GSPC", "SP500"]:
+        return True, "SPX"
+    return False, clean
+
+
 @app.get("/dashboard", response_class=HTMLResponse, summary="Panel de control visual de telemetría y consola interactiva de pruebas")
 @app.get("/api/dashboard", response_class=HTMLResponse, include_in_schema=False)
 async def get_dashboard():
@@ -113,7 +134,8 @@ async def root(request: Request, background_tasks: BackgroundTasks):
             "/v1/market/regime",
             "/v1/market/levels",
             "/v1/market/summary",
-            "/v1/telemetry/stats"
+            "/v1/telemetry/stats",
+            "/v1/feedback"
         ],
         "disclaimer": DISCLAIMER
     }
@@ -174,16 +196,11 @@ async def get_stats():
     summary="Rango de volatilidad y recorrido esperado (Expected Move)"
 )
 @app.get("/api/v1/market/expected-move", response_model=ExpectedMoveResponse, include_in_schema=False)
-async def get_expected_move(request: Request, background_tasks: BackgroundTasks):
+async def get_expected_move(request: Request, background_tasks: BackgroundTasks, symbol: Optional[str] = None):
     start = time.perf_counter()
-    data = await get_latest_market_data()
-
-    price = data["price"]
-    em = data["expected_move"]
-    upper = round(price + em, 2)
-    lower = round(price - em, 2)
-
+    is_supported, requested_sym = check_symbol_supported(symbol)
     duration_ms = (time.perf_counter() - start) * 1000
+
     if should_record_telemetry(request):
         background_tasks.add_task(
             record_telemetry,
@@ -196,6 +213,31 @@ async def get_expected_move(request: Request, background_tasks: BackgroundTasks)
             status_code=200,
             headers=dict(request.headers)
         )
+
+    if not is_supported:
+        background_tasks.add_task(
+            record_feedback,
+            category="ticker_request",
+            ticker=requested_sym,
+            comment=f"Sondeo de demanda: consulta recibida para '{requested_sym}' en /v1/market/expected-move",
+            contact_email=None,
+            user_agent=request.headers.get("user-agent", ""),
+            client_ip=request.client.host if request.client else None
+        )
+        return JSONResponse(
+            status_code=200,
+            content=UnsupportedSymbolResponse(
+                requested_symbol=requested_sym,
+                message=f"Actualmente en Beta pública para SPX. Tu consulta para '{requested_sym}' ha sido registrada automáticamente como voto de demanda para acelerar su cobertura.",
+                timestamp=to_ny_iso_timestamp(None)
+            ).model_dump()
+        )
+
+    data = await get_latest_market_data()
+    price = data["price"]
+    em = data["expected_move"]
+    upper = round(price + em, 2)
+    lower = round(price - em, 2)
 
     return ExpectedMoveResponse(
         symbol=data.get("symbol", "SPX"),
@@ -213,11 +255,11 @@ async def get_expected_move(request: Request, background_tasks: BackgroundTasks)
     summary="Régimen de mercado, VIX y sesgo direccional pronosticado"
 )
 @app.get("/api/v1/market/regime", response_model=RegimeResponse, include_in_schema=False)
-async def get_regime(request: Request, background_tasks: BackgroundTasks):
+async def get_regime(request: Request, background_tasks: BackgroundTasks, symbol: Optional[str] = None):
     start = time.perf_counter()
-    data = await get_latest_market_data()
-
+    is_supported, requested_sym = check_symbol_supported(symbol)
     duration_ms = (time.perf_counter() - start) * 1000
+
     if should_record_telemetry(request):
         background_tasks.add_task(
             record_telemetry,
@@ -230,6 +272,27 @@ async def get_regime(request: Request, background_tasks: BackgroundTasks):
             status_code=200,
             headers=dict(request.headers)
         )
+
+    if not is_supported:
+        background_tasks.add_task(
+            record_feedback,
+            category="ticker_request",
+            ticker=requested_sym,
+            comment=f"Sondeo de demanda: consulta recibida para '{requested_sym}' en /v1/market/regime",
+            contact_email=None,
+            user_agent=request.headers.get("user-agent", ""),
+            client_ip=request.client.host if request.client else None
+        )
+        return JSONResponse(
+            status_code=200,
+            content=UnsupportedSymbolResponse(
+                requested_symbol=requested_sym,
+                message=f"Actualmente en Beta pública para SPX. Tu consulta para '{requested_sym}' ha sido registrada automáticamente como voto de demanda para acelerar su cobertura.",
+                timestamp=to_ny_iso_timestamp(None)
+            ).model_dump()
+        )
+
+    data = await get_latest_market_data()
 
     return RegimeResponse(
         symbol=data.get("symbol", "SPX"),
@@ -247,17 +310,11 @@ async def get_regime(request: Request, background_tasks: BackgroundTasks):
     summary="Niveles objetivo de cierre y centroide de reversión"
 )
 @app.get("/api/v1/market/levels", response_model=LevelsResponse, include_in_schema=False)
-async def get_levels(request: Request, background_tasks: BackgroundTasks):
+async def get_levels(request: Request, background_tasks: BackgroundTasks, symbol: Optional[str] = None):
     start = time.perf_counter()
-    data = await get_latest_market_data()
-
-    price = data["price"]
-    centroid = data["centroid"]
-    target_close = data["target_close"]
-    deviation = round(price - centroid, 2)
-    dist_target = round(target_close - price, 2)
-
+    is_supported, requested_sym = check_symbol_supported(symbol)
     duration_ms = (time.perf_counter() - start) * 1000
+
     if should_record_telemetry(request):
         background_tasks.add_task(
             record_telemetry,
@@ -270,6 +327,32 @@ async def get_levels(request: Request, background_tasks: BackgroundTasks):
             status_code=200,
             headers=dict(request.headers)
         )
+
+    if not is_supported:
+        background_tasks.add_task(
+            record_feedback,
+            category="ticker_request",
+            ticker=requested_sym,
+            comment=f"Sondeo de demanda: consulta recibida para '{requested_sym}' en /v1/market/levels",
+            contact_email=None,
+            user_agent=request.headers.get("user-agent", ""),
+            client_ip=request.client.host if request.client else None
+        )
+        return JSONResponse(
+            status_code=200,
+            content=UnsupportedSymbolResponse(
+                requested_symbol=requested_sym,
+                message=f"Actualmente en Beta pública para SPX. Tu consulta para '{requested_sym}' ha sido registrada automáticamente como voto de demanda para acelerar su cobertura.",
+                timestamp=to_ny_iso_timestamp(None)
+            ).model_dump()
+        )
+
+    data = await get_latest_market_data()
+    price = data["price"]
+    centroid = data["centroid"]
+    target_close = data["target_close"]
+    deviation = round(price - centroid, 2)
+    dist_target = round(target_close - price, 2)
 
     return LevelsResponse(
         symbol=data.get("symbol", "SPX"),
@@ -288,16 +371,11 @@ async def get_levels(request: Request, background_tasks: BackgroundTasks):
     summary="Resumen consolidado de la sesión en un solo payload compacto"
 )
 @app.get("/api/v1/market/summary", response_model=MarketSummaryResponse, include_in_schema=False)
-async def get_summary(request: Request, background_tasks: BackgroundTasks):
+async def get_summary(request: Request, background_tasks: BackgroundTasks, symbol: Optional[str] = None):
     start = time.perf_counter()
-    data = await get_latest_market_data()
-
-    price = data["price"]
-    em = data["expected_move"]
-    centroid = data["centroid"]
-    target_close = data["target_close"]
-
+    is_supported, requested_sym = check_symbol_supported(symbol)
     duration_ms = (time.perf_counter() - start) * 1000
+
     if should_record_telemetry(request):
         background_tasks.add_task(
             record_telemetry,
@@ -310,6 +388,31 @@ async def get_summary(request: Request, background_tasks: BackgroundTasks):
             status_code=200,
             headers=dict(request.headers)
         )
+
+    if not is_supported:
+        background_tasks.add_task(
+            record_feedback,
+            category="ticker_request",
+            ticker=requested_sym,
+            comment=f"Sondeo de demanda: consulta recibida para '{requested_sym}' en /v1/market/summary",
+            contact_email=None,
+            user_agent=request.headers.get("user-agent", ""),
+            client_ip=request.client.host if request.client else None
+        )
+        return JSONResponse(
+            status_code=200,
+            content=UnsupportedSymbolResponse(
+                requested_symbol=requested_sym,
+                message=f"Actualmente en Beta pública para SPX. Tu consulta para '{requested_sym}' ha sido registrada automáticamente como voto de demanda para acelerar su cobertura.",
+                timestamp=to_ny_iso_timestamp(None)
+            ).model_dump()
+        )
+
+    data = await get_latest_market_data()
+    price = data["price"]
+    em = data["expected_move"]
+    centroid = data["centroid"]
+    target_close = data["target_close"]
 
     return MarketSummaryResponse(
         symbol=data.get("symbol", "SPX"),
@@ -327,6 +430,54 @@ async def get_summary(request: Request, background_tasks: BackgroundTasks):
         distance_to_target=round(target_close - price, 2),
         timestamp=data.get("created_at")
     )
+
+
+@app.post(
+    "/v1/feedback",
+    response_model=FeedbackResponse,
+    summary="Buzón de sugerencias, solicitud de tickers y comentarios de clientes"
+)
+@app.post("/api/v1/feedback", response_model=FeedbackResponse, include_in_schema=False)
+async def submit_feedback(body: FeedbackRequest, request: Request, background_tasks: BackgroundTasks):
+    start = time.perf_counter()
+    tid = await record_feedback(
+        category=body.category,
+        ticker=body.ticker,
+        comment=body.comment,
+        contact_email=body.contact_email,
+        user_agent=request.headers.get("user-agent", ""),
+        client_ip=request.client.host if request.client else None
+    )
+
+    duration_ms = (time.perf_counter() - start) * 1000
+    if should_record_telemetry(request):
+        background_tasks.add_task(
+            record_telemetry,
+            endpoint="/v1/feedback",
+            method="POST",
+            user_agent=request.headers.get("user-agent", ""),
+            query_params=dict(request.query_params),
+            client_ip=request.client.host if request.client else None,
+            response_time_ms=duration_ms,
+            status_code=200,
+            headers=dict(request.headers)
+        )
+
+    return FeedbackResponse(
+        status="success",
+        message="¡Muchas gracias por tu sugerencia! Ha sido registrada con éxito y será evaluada por el equipo cuantitativo.",
+        ticket_id=tid,
+        recorded_at=to_ny_iso_timestamp(None)
+    )
+
+
+@app.get(
+    "/v1/feedback",
+    summary="Resumen de sugerencias y ranking de tickers solicitados por clientes"
+)
+@app.get("/api/v1/feedback", include_in_schema=False)
+async def get_feedback():
+    return await get_feedback_summary()
 
 
 MCP_TOOLS_METADATA = [
@@ -364,6 +515,29 @@ MCP_TOOLS_METADATA = [
             "type": "object",
             "properties": {},
             "additionalProperties": False
+        }
+    },
+    {
+        "name": "submit_feedback_or_request",
+        "description": "Envía una sugerencia o solicitud de un nuevo ticker financiero (ej. QQQ, SPY, NVDA, IWM) o nueva métrica al equipo cuantitativo de AlphaQuant.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string",
+                    "enum": ["ticker_request", "feature_request", "general"],
+                    "description": "Categoría de la solicitud."
+                },
+                "ticker": {
+                    "type": "string",
+                    "description": "Símbolo o ticker solicitado (ej. QQQ, SPY, NVDA, IWM)."
+                },
+                "comment": {
+                    "type": "string",
+                    "description": "Detalles o caso de uso de la solicitud."
+                }
+            },
+            "required": ["comment"]
         }
     }
 ]
@@ -549,6 +723,26 @@ async def mcp_streamable_endpoint(request: Request, background_tasks: Background
                 "deviation_from_centroid": round(price - data["centroid"], 2),
                 "distance_to_target": round(data["target_close"] - price, 2),
                 "timestamp": data.get("created_at")
+            }
+        elif tool_name == "submit_feedback_or_request":
+            args = params.get("arguments", {}) if "arguments" in params else params
+            cat = args.get("category", "ticker_request")
+            tick = args.get("ticker")
+            comm = args.get("comment", "")
+            
+            tid = await record_feedback(
+                category=cat,
+                ticker=tick,
+                comment=comm,
+                contact_email=None,
+                user_agent="mcp_ai_agent",
+                client_ip=request.client.host if request.client else None
+            )
+            res = {
+                "status": "success",
+                "message": f"Sugerencia registrada exitosamente para el ticker '{tick or 'general'}'",
+                "ticket_id": tid,
+                "recorded_at": to_ny_iso_timestamp(None)
             }
         else:
             return {

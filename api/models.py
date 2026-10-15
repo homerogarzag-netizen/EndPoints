@@ -46,3 +46,23 @@ class HealthResponse(BaseModel):
     status: str = Field(..., description="Estado del servicio (healthy / degraded)")
     database_connected: bool = Field(..., description="Indica si Supabase está configurado y responde")
     version: str = Field(..., description="Versión de la API")
+
+class FeedbackRequest(BaseModel):
+    category: str = Field(default="ticker_request", description="Categoría: ticker_request, feature_request, general")
+    ticker: Optional[str] = Field(default=None, description="Ticker sugerido (ej. QQQ, SPY, NVDA, IWM)")
+    comment: Optional[str] = Field(default=None, description="Comentario o sugerencia detallada")
+    contact_email: Optional[str] = Field(default=None, description="Correo electrónico opcional de contacto")
+
+class FeedbackResponse(BaseModel):
+    status: str = Field(..., description="Estado del envío")
+    message: str = Field(..., description="Mensaje de confirmación")
+    ticket_id: Optional[int] = Field(default=None, description="Identificador único del registro")
+    recorded_at: str = Field(..., description="Marca temporal oficial NY (ISO-8601)")
+
+class UnsupportedSymbolResponse(BaseModel):
+    status: str = Field(default="symbol_in_roadmap", description="Estado de disponibilidad del activo")
+    requested_symbol: str = Field(..., description="Símbolo solicitado")
+    supported_symbols: list = Field(default=["SPX"], description="Activos actualmente con cobertura activa")
+    message: str = Field(..., description="Mensaje explicativo con registro automático de voto")
+    vote_recorded: bool = Field(default=True, description="Indica si la solicitud fue registrada como voto de demanda")
+    timestamp: str = Field(..., description="Marca temporal de la solicitud (Hora NY)")

@@ -87,6 +87,19 @@
 }
 ```
 
+### 5. Buzón de Sugerencias y Solicitud de Tickers
+- **Ruta:** `POST /v1/feedback`
+- **Descripción:** Permite a agentes autónomos y desarrolladores enviar votos de demanda para nuevos activos (ej. QQQ, SPY, NVDA, IWM, BTC) o solicitar nuevas métricas algorítmicas.
+- **Payload JSON:**
+```json
+{
+  "category": "ticker_request",
+  "ticker": "QQQ",
+  "comment": "Solicitud de cobertura para QQQ en 0DTE"
+}
+```
+- **Sondeo Automático:** Todos los endpoints soportan el parámetro `?symbol=...`. Si consultas un ticker no soportado aún, la API registra automáticamente tu solicitud como un voto de demanda para priorizarlo en el roadmap.
+
 ---
 
 ## Casos de Uso para Agentes Autónomos

@@ -164,3 +164,105 @@ async def get_telemetry_stats() -> Dict[str, Any]:
             logger.error(f"Error calculando métricas de telemetría: {exc}")
     
     return {"sample_size": 0, "demand_by_endpoint": {}, "demand_by_caller_type": {}, "recent_calls": []}
+
+
+async def record_feedback(
+    category: str = "ticker_request",
+    ticker: Optional[str] = None,
+    comment: Optional[str] = None,
+    contact_email: Optional[str] = None,
+    user_agent: Optional[str] = None,
+    client_ip: Optional[str] = None
+) -> Optional[int]:
+    """
+    Registra una sugerencia o voto de ticker en Supabase.
+    No bloqueante y tolerante a fallos.
+    """
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        return None
+
+    try:
+        import hashlib
+        ip_hash = hashlib.sha256(client_ip.encode()).hexdigest()[:16] if client_ip else None
+        clean_ticker = ticker.strip().upper() if ticker else None
+
+        payload = {
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "category": category,
+            "ticker": clean_ticker,
+            "comment": comment.strip() if comment else None,
+            "contact_email": contact_email.strip() if contact_email else None,
+            "user_agent": user_agent[:255] if user_agent else None,
+            "ip_hash": ip_hash
+        }
+
+        url = f"{SUPABASE_URL}/rest/v1/feedback_clientes"
+        headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Content-Type": "application/json",
+            "Prefer": "return=representation"
+        }
+
+        async with httpx.AsyncClient(timeout=3.0) as client:
+            resp = await client.post(url, json=payload, headers=headers)
+            if resp.status_code in [200, 201]:
+                res_data = resp.json()
+                if isinstance(res_data, list) and len(res_data) > 0:
+                    return res_data[0].get("id")
+    except Exception as exc:
+        if DEBUG:
+            logger.warning(f"Error registrando feedback: {exc}")
+    return None
+
+
+async def get_feedback_summary() -> Dict[str, Any]:
+    """
+    Obtiene el resumen de sugerencias y ranking de tickers solicitados.
+    """
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        return {"total_feedback": 0, "top_tickers": {}, "recent_feedback": []}
+
+    url = f"{SUPABASE_URL}/rest/v1/feedback_clientes"
+    params = {
+        "select": "id,created_at,category,ticker,comment,contact_email",
+        "order": "created_at.desc",
+        "limit": 200
+    }
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}"
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=3.0) as client:
+            resp = await client.get(url, params=params, headers=headers)
+            if resp.status_code == 200:
+                rows = resp.json()
+                ticker_counts: Dict[str, int] = {}
+                for r in rows:
+                    t = r.get("ticker")
+                    if t:
+                        t = t.strip().upper()
+                        ticker_counts[t] = ticker_counts.get(t, 0) + 1
+
+                recent = []
+                for r in rows[:15]:
+                    c_copy = dict(r)
+                    c_copy["created_at"] = to_ny_iso_timestamp(r.get("created_at"))
+                    em = c_copy.get("contact_email")
+                    if em and "@" in em:
+                        parts = em.split("@")
+                        c_copy["contact_email"] = f"{parts[0][:2]}***@{parts[1]}"
+                    recent.append(c_copy)
+
+                return {
+                    "total_feedback": len(rows),
+                    "top_tickers": dict(sorted(ticker_counts.items(), key=lambda x: x[1], reverse=True)),
+                    "recent_feedback": recent
+                }
+    except Exception as exc:
+        if DEBUG:
+            logger.error(f"Error obteniendo resumen de feedback: {exc}")
+
+    return {"total_feedback": 0, "top_tickers": {}, "recent_feedback": []}

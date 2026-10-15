@@ -47,7 +47,7 @@
           <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
             <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Sistema En Vivo
           </span>
-          <span id="nyMarketStatus" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-700/50 text-slate-400 border border-slate-600">
+          <span id="nyMarketStatus" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-700/50 text-slate-400 border border-slate-600">
             <span class="h-1.5 w-1.5 rounded-full bg-slate-500"></span> Mercado Cerrado
           </span>
         </div>
@@ -198,6 +198,9 @@
         <button onclick="selectEndpoint('/v1/market/summary')" class="endpoint-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition">
           /v1/market/summary
         </button>
+        <button onclick="selectEndpoint('/v1/market/summary?symbol=QQQ')" class="endpoint-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition">
+          ?symbol=QQQ (Sondeo)
+        </button>
         <button onclick="selectEndpoint('/v1/market/expected-move')" class="endpoint-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition">
           /v1/market/expected-move
         </button>
@@ -207,14 +210,14 @@
         <button onclick="selectEndpoint('/v1/market/levels')" class="endpoint-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition">
           /v1/market/levels
         </button>
+        <button onclick="selectEndpoint('/v1/feedback')" class="endpoint-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition">
+          /v1/feedback
+        </button>
         <button onclick="selectEndpoint('/llms.txt')" class="endpoint-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition">
           /llms.txt
         </button>
         <button onclick="selectEndpoint('/health')" class="endpoint-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition">
           /health
-        </button>
-        <button onclick="selectEndpoint('/v1/telemetry/stats')" class="endpoint-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition">
-          /v1/telemetry/stats
         </button>
       </div>
 
@@ -267,6 +270,115 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Customer Demand & Ticker Voting Section -->
+  <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Left: Ticker Voting & Feedback Form -->
+    <div class="glass-card p-6 rounded-2xl border border-slate-800 flex flex-col gap-5 lg:col-span-6">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="h-8 w-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+            <i class="fa-solid fa-lightbulb"></i>
+          </div>
+          <div>
+            <h2 class="text-base font-semibold text-white">Sondeo de Nuevos Tickers & Feedback</h2>
+            <p class="text-xs text-slate-400">¿Qué activos o métricas cuantitativas necesitas en tu operativa?</p>
+          </div>
+        </div>
+        <span class="text-xs px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20 font-medium">Buzón Abierto</span>
+      </div>
+
+      <!-- Quick Ticker Vote Pills -->
+      <div>
+        <label class="text-xs font-semibold text-slate-300 block mb-2">Voto Rápido en 1 Clic (Priorizar Cobertura):</label>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="quickVoteTicker('QQQ')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-emerald-600 hover:text-white text-slate-200 border border-slate-700 transition flex items-center gap-1.5 active:scale-95 shadow">
+            <i class="fa-solid fa-plus text-emerald-400"></i> QQQ (Nasdaq 100)
+          </button>
+          <button onclick="quickVoteTicker('SPY')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-emerald-600 hover:text-white text-slate-200 border border-slate-700 transition flex items-center gap-1.5 active:scale-95 shadow">
+            <i class="fa-solid fa-plus text-emerald-400"></i> SPY (S&P 500 ETF)
+          </button>
+          <button onclick="quickVoteTicker('NVDA')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-emerald-600 hover:text-white text-slate-200 border border-slate-700 transition flex items-center gap-1.5 active:scale-95 shadow">
+            <i class="fa-solid fa-plus text-emerald-400"></i> NVDA (Nvidia)
+          </button>
+          <button onclick="quickVoteTicker('IWM')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-emerald-600 hover:text-white text-slate-200 border border-slate-700 transition flex items-center gap-1.5 active:scale-95 shadow">
+            <i class="fa-solid fa-plus text-emerald-400"></i> IWM (Russell 2000)
+          </button>
+          <button onclick="quickVoteTicker('TSLA')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-emerald-600 hover:text-white text-slate-200 border border-slate-700 transition flex items-center gap-1.5 active:scale-95 shadow">
+            <i class="fa-solid fa-plus text-emerald-400"></i> TSLA (Tesla)
+          </button>
+          <button onclick="quickVoteTicker('BTC')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-emerald-600 hover:text-white text-slate-200 border border-slate-700 transition flex items-center gap-1.5 active:scale-95 shadow">
+            <i class="fa-solid fa-plus text-emerald-400"></i> BTC / Cripto
+          </button>
+        </div>
+      </div>
+
+      <!-- Feedback Form -->
+      <form id="feedbackForm" onsubmit="submitCustomFeedback(event)" class="flex flex-col gap-3 pt-2">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="text-[11px] font-medium text-slate-400 block mb-1">Tipo de Solicitud</label>
+            <select id="fbCategory" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs outline-none focus:border-amber-400">
+              <option value="ticker_request">Solicitar Nuevo Ticker</option>
+              <option value="feature_request">Solicitar Métrica / Función</option>
+              <option value="general">Comentario General</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[11px] font-medium text-slate-400 block mb-1">Ticker Específico (Opcional)</label>
+            <input type="text" id="fbTicker" placeholder="Ej. QQQ, AAPL, AMZN..." class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs outline-none focus:border-amber-400 uppercase font-mono">
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-medium text-slate-400 block mb-1">¿Qué cálculo, informe o dato te gustaría que entregue la API?</label>
+          <textarea id="fbComment" rows="2" required placeholder="Describe tu necesidad o caso de uso (ej. 'Quiero el ratio Gamma o el Expected Move para QQQ en 0DTE')..." class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl p-3 text-xs outline-none focus:border-amber-400"></textarea>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center gap-3">
+          <input type="email" id="fbEmail" placeholder="Tu email (opcional, para avisarte cuando esté disponible)" class="w-full sm:flex-1 bg-slate-900 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs outline-none focus:border-amber-400">
+          <button type="submit" id="fbSubmitBtn" class="w-full sm:w-auto bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-5 py-2 rounded-xl text-xs flex items-center justify-center gap-2 transition active:scale-95 shadow-md shadow-amber-500/20">
+            <i class="fa-solid fa-paper-plane"></i> Enviar Sugerencia
+          </button>
+        </div>
+        <p id="fbNotice" class="text-xs text-emerald-400 hidden flex items-center gap-1.5 mt-1 font-medium"></p>
+      </form>
+    </div>
+
+    <!-- Right: Demand Leaderboard & Community Feedback Wall -->
+    <div class="glass-card p-6 rounded-2xl border border-slate-800 flex flex-col gap-5 lg:col-span-6">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="h-8 w-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <i class="fa-solid fa-fire"></i>
+          </div>
+          <div>
+            <h2 class="text-base font-semibold text-white">Ranking de Demanda de Clientes</h2>
+            <p class="text-xs text-slate-400">Activos y sugerencias solicitados en tiempo real</p>
+          </div>
+        </div>
+        <span class="text-xs text-slate-400 font-mono" id="totalVotesBadge">0 registros</span>
+      </div>
+
+      <!-- Top Tickers Bars -->
+      <div>
+        <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2.5">Top Tickers Más Solicitados</h3>
+        <div id="topTickersList" class="flex flex-col gap-2">
+          <div class="text-xs text-slate-500 py-2">Cargando sondeo de demanda...</div>
+        </div>
+      </div>
+
+      <!-- Recent Suggestions Feed -->
+      <div>
+        <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Comentarios Recientes de Clientes (Hora NY)</h3>
+        <div id="recentFeedbackList" class="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
+          <div class="text-xs text-slate-500 py-2">Sin sugerencias aún. Sé el primero en votar.</div>
+        </div>
       </div>
     </div>
 
@@ -387,7 +499,6 @@
 
     async function fetchMarketSummary() {
       try {
-        // Marcamos con cabecera interna para excluir el sondeo automático de la telemetría
         const res = await fetch('/v1/market/summary', {
           headers: {
             'X-Internal-Dashboard': 'true'
@@ -434,6 +545,135 @@
         updateFeedTable(s.recent_calls || []);
       } catch (err) {
         console.error('Error fetching stats:', err);
+      }
+    }
+
+    async function fetchFeedbackStats() {
+      try {
+        const res = await fetch('/v1/feedback', {
+          headers: {
+            'X-Internal-Dashboard': 'true'
+          }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        renderFeedbackLeaderboard(data);
+      } catch (err) {
+        console.error('Error fetching feedback stats:', err);
+      }
+    }
+
+    function renderFeedbackLeaderboard(data) {
+      const badge = document.getElementById('totalVotesBadge');
+      if (badge) badge.innerText = `${data.total_feedback || 0} registros`;
+
+      const topList = document.getElementById('topTickersList');
+      const tickers = data.top_tickers || {};
+      const tickerKeys = Object.keys(tickers);
+      
+      if (tickerKeys.length === 0) {
+        topList.innerHTML = '<div class="text-xs text-slate-500 py-2">Aún no hay votos registrados. ¡Sé el primero en votar con los botones arriba!</div>';
+      } else {
+        const maxVotes = Math.max(...Object.values(tickers), 1);
+        topList.innerHTML = tickerKeys.slice(0, 5).map(ticker => {
+          const count = tickers[ticker];
+          const pct = Math.round((count / maxVotes) * 100);
+          return `
+            <div>
+              <div class="flex justify-between text-xs font-medium mb-1">
+                <span class="text-white font-mono flex items-center gap-1.5">
+                  <span class="h-2 w-2 rounded-full bg-amber-400"></span> ${ticker}
+                </span>
+                <span class="text-amber-400 font-mono font-bold">${count} ${count === 1 ? 'voto' : 'votos'}</span>
+              </div>
+              <div class="w-full bg-slate-900 rounded-full h-2 overflow-hidden border border-slate-800">
+                <div class="bg-gradient-to-r from-amber-500 to-emerald-500 h-2 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      const recentList = document.getElementById('recentFeedbackList');
+      const recents = data.recent_feedback || [];
+      if (recents.length === 0) {
+        recentList.innerHTML = '<div class="text-xs text-slate-500 py-2">Sin comentarios recientes aún.</div>';
+      } else {
+        recentList.innerHTML = recents.map(r => {
+          const timeStr = r.created_at ? formatNYDateTime(r.created_at) : '--';
+          const tickerTag = r.ticker ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">${r.ticker}</span>` : '';
+          return `
+            <div class="bg-slate-900/70 p-2.5 rounded-xl border border-slate-800/80 text-xs flex flex-col gap-1">
+              <div class="flex items-center justify-between text-[11px] text-slate-400">
+                <span class="flex items-center gap-1.5 font-medium text-slate-300">
+                  ${tickerTag}
+                  <span class="capitalize text-slate-400">${(r.category || '').replace('_', ' ')}</span>
+                </span>
+                <span class="text-[10px] text-slate-500">${timeStr}</span>
+              </div>
+              <p class="text-slate-300 text-xs italic">"${r.comment || 'Voto por nuevo ticker'}"</p>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    async function quickVoteTicker(ticker) {
+      try {
+        const res = await fetch('/v1/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            category: 'ticker_request',
+            ticker: ticker,
+            comment: `Voto rápido desde el dashboard para priorizar ${ticker}`
+          })
+        });
+        if (res.ok) {
+          alert(`¡Voto registrado para ${ticker}! Muchas gracias por ayudarnos a priorizar el roadmap.`);
+          fetchFeedbackStats();
+        }
+      } catch (err) {
+        console.error('Error enviando voto rápido:', err);
+      }
+    }
+
+    async function submitCustomFeedback(e) {
+      e.preventDefault();
+      const cat = document.getElementById('fbCategory').value;
+      const tick = document.getElementById('fbTicker').value.trim();
+      const comm = document.getElementById('fbComment').value.trim();
+      const email = document.getElementById('fbEmail').value.trim();
+      const notice = document.getElementById('fbNotice');
+      const btn = document.getElementById('fbSubmitBtn');
+
+      btn.disabled = true;
+      btn.classList.add('opacity-50');
+
+      try {
+        const res = await fetch('/v1/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            category: cat,
+            ticker: tick || null,
+            comment: comm,
+            contact_email: email || null
+          })
+        });
+
+        if (res.ok) {
+          document.getElementById('feedbackForm').reset();
+          notice.innerHTML = '<i class="fa-solid fa-circle-check"></i> ¡Sugerencia enviada y guardada con éxito! La revisaremos enseguida.';
+          notice.classList.remove('hidden');
+          setTimeout(() => notice.classList.add('hidden'), 5000);
+          fetchFeedbackStats();
+        }
+      } catch (err) {
+        alert('Error al enviar sugerencia: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('opacity-50');
       }
     }
 
@@ -562,7 +802,6 @@
 
       const t0 = performance.now();
       try {
-        // Petición de cliente normal (sin header interno) para registrar en telemetria_sonda
         const res = await fetch(path);
         const t1 = performance.now();
         const duration = Math.round(t1 - t0);
@@ -589,6 +828,7 @@
 
         // Actualizar estadísticas de telemetría poco después para reflejar la prueba manual
         setTimeout(fetchTelemetryStats, 700);
+        setTimeout(fetchFeedbackStats, 1000);
 
       } catch (err) {
         badge.classList.remove('hidden');
@@ -611,7 +851,7 @@
     async function fetchAllData() {
       const icon = document.getElementById('refreshIcon');
       icon.classList.add('fa-spin');
-      await Promise.all([fetchMarketSummary(), fetchTelemetryStats()]);
+      await Promise.all([fetchMarketSummary(), fetchTelemetryStats(), fetchFeedbackStats()]);
       setTimeout(() => icon.classList.remove('fa-spin'), 600);
     }
 
@@ -635,7 +875,6 @@
       setInterval(updateNYClock, 1000);
       fetchAllData();
       setupAutoRefresh();
-      // NO ejecutamos executeTest() automáticamente en el arranque para evitar peticiones artificiales
     });
   </script>
 </body>
