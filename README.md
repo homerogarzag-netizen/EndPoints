@@ -1,172 +1,112 @@
 # AlphaQuant - Market Intelligence API for AI Agents 🚀
 
-[![Live Dashboard](https://img.shields.io/badge/Live%20Dashboard-Ops%20Monitor-10b981?style=for-the-badge&logo=speedtest)](https://end-points.vercel.app/dashboard)
 [![Production API](https://img.shields.io/badge/Production%20API-Online-success?style=for-the-badge&logo=vercel)](https://end-points.vercel.app/)
+[![Live Dashboard](https://img.shields.io/badge/Live%20Dashboard-Ops%20Monitor-10b981?style=for-the-badge&logo=speedtest)](https://end-points.vercel.app/dashboard)
 [![Swagger Docs](https://img.shields.io/badge/Swagger-OpenAPI%20Docs-blue?style=for-the-badge&logo=swagger)](https://end-points.vercel.app/docs)
-[![Agent Protocol](https://img.shields.io/badge/LLMs.txt-Agent%20Ready-purple?style=for-the-badge)](https://end-points.vercel.app/llms.txt)
 [![Smithery Registry](https://img.shields.io/badge/Smithery-MCP%20Server-orange?style=for-the-badge)](https://smithery.ai/servers/@homero-garza-g/alphaquant)
+[![Agent Protocol](https://img.shields.io/badge/LLMs.txt-Agent%20Ready-purple?style=for-the-badge)](https://end-points.vercel.app/llms.txt)
 
-Microservicio de alta velocidad y baja latencia que entrega datos cuantitativos estructurados de **opciones, volatilidad y recorrido esperado (0DTE/SPX)** directamente a **Agentes de IA**, LLMs y sistemas algorítmicos.
+AlphaQuant es un microservicio de alta velocidad y baja latencia diseñado específicamente para **Agentes de IA (Claude, GPT, Cursor, LangChain)** y traders algorítmicos. Entrega datos cuantitativos estructurados derivados del mercado de opciones del **S&P 500 (SPX 0DTE)**: recorrido esperado (Expected Move), régimen de volatilidad (VIX), sesgo direccional y niveles de reversión a la media.
+
+Todas las marcas temporales se entregan formateadas bajo el estándar **ISO-8601 con offset oficial de Nueva York (`America/New_York` / ET)**.
 
 ---
 
-## ⚡ Quickstart para Agentes y Desarrolladores (Zero Setup)
+## ⚡ Quickstart en 30 Segundos (Zero Setup)
 
-La API pública se encuentra en producción y lista para ser consumida inmediatamente:
+La API pública se encuentra en producción y lista para ser consumida inmediatamente sin llaves de acceso en fase pública:
 
-### 1. Consultar Resumen Cuantitativo en Vivo (curl)
+### 1. Consulta Rápida vía cURL
 ```bash
-curl -s https://end-points.vercel.app/v1/market/summary | jq
+curl -s "https://end-points.vercel.app/v1/market/summary" | jq
 ```
 
-### 2. Uso Directo en Python / Agentes
+### 2. Integración en Python
 ```python
 import requests
 
 url = "https://end-points.vercel.app/v1/market/summary"
-headers = {"User-Agent": "MyTradingAgent/1.0"}
+response = requests.get(url, headers={"User-Agent": "QuantBot/1.0"}).json()
 
-data = requests.get(url, headers=headers).json()
-print(f"SPX Spot: {data['price']}")
-print(f"Rango 0DTE Esperado: {data['lower_bound']} - {data['upper_bound']}")
-print(f"Sesgo Previsto: {data['predicted_direction']} (Confianza: {data['predicted_strength']}%)")
+print(f"SPX Spot: {response['price']}")
+print(f"Rango 0DTE: [{response['lower_bound']} - {response['upper_bound']}] (±{response['expected_move']})")
+print(f"Régimen: {response['trend_status']} | Sesgo: {response['predicted_direction']} ({response['predicted_strength']}%)")
+print(f"Objetivo de Cierre: {response['target_close']} | Centroide: {response['centroid']}")
+print(f"Hora Mercado NY: {response['timestamp']}")
 ```
 
-### 3. Conectar a Claude Desktop, Cursor o Windsurf (Vía MCP)
-Este repositorio incluye un servidor **MCP (Model Context Protocol)** con cero dependencias externas (`mcp_server.py`). Agrega esto a tu archivo de configuración de Claude (`claude_desktop_config.json`):
+### 3. Integración en TypeScript / Node.js
+```typescript
+const res = await fetch("https://end-points.vercel.app/v1/market/summary");
+const data = await res.json();
+console.log(`Expected Move SPX: ±${data.expected_move} | Cierre Proyectado: ${data.target_close}`);
+```
 
+---
+
+## 🤖 Conexión a Agentes de IA vía MCP (Model Context Protocol)
+
+AlphaQuant está verificado en **Smithery.ai** y expone un endpoint Streamable HTTP compatible con el protocolo MCP.
+
+### Instalación en 1 Clic con Smithery CLI:
+```bash
+# Para Claude Desktop
+npx -y @smithery/cli install @homero-garza-g/alphaquant --client claude
+
+# Para Cursor
+npx -y @smithery/cli install @homero-garza-g/alphaquant --client cursor
+```
+
+### Configuración Manual en Claude Desktop (`claude_desktop_config.json`):
 ```json
 {
   "mcpServers": {
     "alphaquant": {
       "command": "python3",
-      "args": ["/ruta/absoluta/a/EndPoints/mcp_server.py"]
+      "args": ["-c", "import urllib.request, sys; exec(urllib.request.urlopen('https://raw.githubusercontent.com/homerogarzag-netizen/EndPoints/main/mcp_server.py').read().decode('utf-8'))"]
     }
   }
 }
 ```
 
+### Herramientas MCP Disponibles para Agentes:
+- `get_market_summary`: Resumen cuantitativo consolidado completo (precio spot, Expected Move, bandas, VIX, tendencia, centroide y objetivo).
+- `get_expected_move`: Recorrido esperado de la sesión y límites superior/inferior.
+- `get_market_regime`: Régimen de volatilidad, VIX y sesgo direccional pronosticado.
+- `get_reversion_levels`: Centroide cuantitativo y precio objetivo de cierre.
+- `submit_feedback_or_request`: Permite al agente solicitar nuevos activos (QQQ, SPY, NVDA) o nuevas métricas algorítmicas.
+
 ---
 
-## 📡 Endpoints Públicos Disponibles
+## 📡 Endpoints Públicos
 
 | Endpoint | Descripción | Formato |
 | :--- | :--- | :---: |
-| `GET /v1/market/summary` | Resumen cuantitativo completo en 1 solo payload compacto | JSON |
-| `GET /v1/market/expected-move` | Spot, Expected Move calculado y bandas de volatilidad | JSON |
-| `GET /v1/market/regime` | Nivel de VIX, tendencia y sesgo direccional pronosticado | JSON |
-| `GET /v1/market/levels` | Centroide de reversión a la media y precio objetivo de cierre | JSON |
+| `GET /v1/market/summary` | Resumen cuantitativo completo de la sesión en un solo payload compacto | JSON |
+| `GET /v1/market/expected-move` | Precio spot, Expected Move (0DTE) y bandas de volatilidad superior/inferior | JSON |
+| `GET /v1/market/regime` | Nivel actual de VIX, régimen de tendencia y sesgo pronosticado | JSON |
+| `GET /v1/market/levels` | Centroide de reversión a la media y precio objetivo proyectado de cierre | JSON |
+| `POST /v1/feedback` | Buzón para solicitar nuevos activos (QQQ, SPY, NVDA) o sugerir métricas | JSON |
+| `GET /v1/feedback` | Ranking de demanda y activos más solicitados por la comunidad | JSON |
 | `GET /v1/telemetry/stats` | Métricas públicas agregadas de consumo y demanda | JSON |
-| `GET /llms.txt` | Manifiesto de descubrimiento estándar para agentes y LLMs | Texto plano |
-| `GET /docs` | Documentación interactiva Swagger / OpenAPI | UI |
+| `GET /llms.txt` | Manifiesto estándar para motores de IA y LLMs | Texto Plano |
+| `GET /docs` | Especificación interactiva Swagger / OpenAPI | UI |
 
 ---
 
-## 🛠️ Estructura del Proyecto
+## 🗳️ Soporte de Activos & Solicitud de Tickers
 
-```text
-.
-├── api/
-│   ├── __init__.py
-│   ├── index.py           # Entrypoint FastAPI (CORS, rutas y background tasks)
-│   ├── config.py          # Variables de entorno y ajustes
-│   ├── db.py              # Conexión asíncrona a Supabase (market_logs)
-│   ├── models.py          # Modelos Pydantic optimizados para tokens
-│   └── telemetry.py       # Sonda de demanda no bloqueante (telemetria_sonda)
-├── public/
-│   └── llms.txt           # Especificación estándar para indexación de Agentes
-├── .env.example           # Plantilla de variables de entorno
-├── requirements.txt       # Dependencias mínimas de producción
-├── schema.sql             # Script SQL para tablas de Supabase
-├── vercel.json            # Configuración de rutas para Vercel Serverless
-└── README.md
-```
+- **Activo Base Activo:** `SPX` (S&P 500 Index 0DTE).
+- **Sondeo de Nuevos Activos:** Todos los endpoints soportan el parámetro `?symbol=...` (ej. `?symbol=QQQ` o `?symbol=NVDA`). Si consultas un activo aún no integrado, el sistema registra automáticamente tu consulta como un **voto de demanda** para acelerar su lanzamiento en el roadmap.
+- **Votación Visual:** Puedes votar directamente por activos como **QQQ, SPY, NVDA, IWM, TSLA y BTC** desde el panel web interactivo en **[/dashboard](https://end-points.vercel.app/dashboard)**.
 
 ---
 
-## 🛠️ Paso 1: Configurar Supabase
+## 📊 Monitor de Telemetría & Consola Web
 
-1. Abre tu panel en [Supabase](https://supabase.com) e ingresa al **SQL Editor**.
-2. Copia y ejecuta el contenido de [`schema.sql`](./schema.sql).
-   - Crea la tabla de telemetría `telemetria_sonda` con sus índices analíticos.
-   - Crea (si no existe) la tabla `market_logs` y agrega un registro de prueba.
-3. Copia tu **Project URL** y tu **Anon / Service Key** desde *Project Settings -> API*.
+Accede al panel de control en tiempo real para inspeccionar el estado del sistema, el reloj de Wall Street (ET), las métricas de consumo y probar cada endpoint interactivamente en 1 clic:
 
----
-
-## 💻 Paso 2: Ejecución y Pruebas Locales
-
-1. Activa tu entorno virtual e instala dependencias:
-   ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
-   pip install -r requirements.txt
-   ```
-
-2. Configura tu archivo `.env`:
-   ```bash
-   cp .env.example .env
-   # Edita .env con tus credenciales de Supabase
-   ```
-   *(Nota: Si no configuras las variables inmediatamente, la API iniciará en modo mock con datos simulados sin romperse).*
-
-3. Inicia el servidor de desarrollo:
-   ```bash
-   uvicorn api.index:app --reload --port 8000
-   ```
-
-4. Explora las rutas en tu navegador:
-   - **Documentación Swagger:** [http://localhost:8000/docs](http://localhost:8000/docs)
-   - **Manifiesto para Agentes:** [http://localhost:8000/llms.txt](http://localhost:8000/llms.txt)
-   - **Expected Move:** [http://localhost:8000/v1/market/expected-move](http://localhost:8000/v1/market/expected-move)
-   - **Régimen de Mercado:** [http://localhost:8000/v1/market/regime](http://localhost:8000/v1/market/regime)
-   - **Niveles Cuantitativos:** [http://localhost:8000/v1/market/levels](http://localhost:8000/v1/market/levels)
-   - **Resumen Completo:** [http://localhost:8000/v1/market/summary](http://localhost:8000/v1/market/summary)
-
----
-
-## ☁️ Paso 3: Despliegue en Vercel
-
-### Opción A: Vercel CLI (Más rápido)
-```bash
-npm i -g vercel
-vercel
-```
-Durante el asistente de Vercel, agrega las variables de entorno `SUPABASE_URL` y `SUPABASE_KEY`.
-
-### Opción B: Repositorio en GitHub
-1. Sube este proyecto a tu repositorio de GitHub.
-2. Ve a [Vercel Dashboard](https://vercel.com/new), importa el repositorio.
-3. En la sección **Environment Variables**, añade:
-   - `SUPABASE_URL`
-   - `SUPABASE_KEY`
-4. Presiona **Deploy**. Vercel detectará automáticamente `vercel.json` y la carpeta `api/`.
-
----
-
-## 📡 Paso 4: La Estrategia del Sondeo de Demanda
-
-Una vez desplegada tu API:
-
-1. **Registra tus endpoints en el ecosistema:**
-   - Publica un servidor MCP o añade tu API en directorios como Smithery.ai, Glama.ai o mcp.so.
-   - Publica un post o issue en foros y repositorios de agentes de trading (como trading-agents, CrewAI, LangChain).
-2. **Monitorea `telemetria_sonda` en Supabase:**
-   - Ejecuta consultas como:
-     ```sql
-     -- ¿Qué endpoint es el más consultado?
-     SELECT endpoint, count(*) as peticiones 
-     FROM telemetria_sonda 
-     GROUP BY endpoint 
-     ORDER BY peticiones DESC;
-
-     -- ¿Qué tipo de clientes nos llaman?
-     SELECT caller_type, count(*) as total 
-     FROM telemetria_sonda 
-     GROUP BY caller_type;
-     ```
-3. **Pivote y Monetización:**
-   - El endpoint con más volumen de llamadas de `ai_agent` y `python_client` es tu producto estrella para empaquetar con claves API de pago (mediante Zuplo, Unkey o Stripe).
+👉 **[https://end-points.vercel.app/dashboard](https://end-points.vercel.app/dashboard)**
 
 ---
 
