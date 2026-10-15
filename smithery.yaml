@@ -1,0 +1,18 @@
+# Smithery.ai MCP Server Configuration
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      apiUrl:
+        type: string
+        default: "https://end-points.vercel.app/v1/market"
+        description: "AlphaQuant Market API Base URL"
+  commandFunction: |-
+    (config) => ({
+      command: 'python3',
+      args: ['mcp_server.py'],
+      env: {
+        API_BASE: config.apiUrl || 'https://end-points.vercel.app/v1/market'
+      }
+    })

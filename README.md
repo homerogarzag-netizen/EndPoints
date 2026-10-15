@@ -30,6 +30,20 @@ print(f"Rango 0DTE Esperado: {data['lower_bound']} - {data['upper_bound']}")
 print(f"Sesgo Previsto: {data['predicted_direction']} (Confianza: {data['predicted_strength']}%)")
 ```
 
+### 3. Conectar a Claude Desktop, Cursor o Windsurf (Vía MCP)
+Este repositorio incluye un servidor **MCP (Model Context Protocol)** con cero dependencias externas (`mcp_server.py`). Agrega esto a tu archivo de configuración de Claude (`claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "alphaquant": {
+      "command": "python3",
+      "args": ["/ruta/absoluta/a/EndPoints/mcp_server.py"]
+    }
+  }
+}
+```
+
 ---
 
 ## 📡 Endpoints Públicos Disponibles
