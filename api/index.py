@@ -1,8 +1,9 @@
+import json
 import time
 from pathlib import Path
 from fastapi import FastAPI, Request, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse, RedirectResponse
+from fastapi.responses import PlainTextResponse, RedirectResponse, JSONResponse
 
 from api.config import API_TITLE, API_VERSION
 from api.models import (
@@ -292,3 +293,197 @@ async def get_summary(request: Request, background_tasks: BackgroundTasks):
         distance_to_target=round(target_close - price, 2),
         timestamp=data.get("created_at")
     )
+
+
+MCP_TOOLS_METADATA = [
+    {
+        "name": "get_market_summary",
+        "description": "Obtiene el resumen cuantitativo completo de SPX en un solo payload: precio spot, Expected Move (0DTE), bandas de volatilidad, VIX, tendencia, centroide y precio objetivo de cierre.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": False
+        }
+    },
+    {
+        "name": "get_expected_move",
+        "description": "Obtiene el rango de volatilidad y recorrido esperado para la sesión (0DTE/SPX), incluyendo el límite superior (upper_bound) y límite inferior (lower_bound).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": False
+        }
+    },
+    {
+        "name": "get_market_regime",
+        "description": "Obtiene el nivel de VIX, régimen de tendencia actual y sesgo direccional pronosticado con porcentaje de confianza.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": False
+        }
+    },
+    {
+        "name": "get_reversion_levels",
+        "description": "Obtiene los niveles cuantitativos de reversión a la media: centroide de equilibrio, precio objetivo de cierre (target_close) y desviaciones.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": False
+        }
+    }
+]
+
+
+@app.api_route("/mcp", methods=["GET", "POST"], summary="Endpoint HTTP Streamable para el protocolo MCP (Smithery / Agentes)")
+@app.api_route("/api/mcp", methods=["GET", "POST"], include_in_schema=False)
+async def mcp_streamable_endpoint(request: Request, background_tasks: BackgroundTasks):
+    """
+    Endpoint Streamable HTTP compatible con el protocolo MCP (Model Context Protocol).
+    Permite registrar la API directamente en Smithery.ai y pasarelas de agentes.
+    """
+    if request.method == "GET":
+        return {
+            "status": "ready",
+            "protocol": "mcp",
+            "version": "2024-11-05",
+            "server": "AlphaQuant-MCP",
+            "tools": [t["name"] for t in MCP_TOOLS_METADATA]
+        }
+
+    start = time.perf_counter()
+    try:
+        body = await request.json()
+    except Exception:
+        return JSONResponse(
+            status_code=400,
+            content={"jsonrpc": "2.0", "id": None, "error": {"code": -32700, "message": "Parse error"}}
+        )
+
+    req_id = body.get("id")
+    method = body.get("method")
+    params = body.get("params", {})
+
+    duration_ms = (time.perf_counter() - start) * 1000
+    background_tasks.add_task(
+        record_telemetry,
+        endpoint=f"/mcp?method={method}",
+        method="POST",
+        user_agent=request.headers.get("user-agent", ""),
+        query_params=dict(request.query_params),
+        client_ip=request.client.host if request.client else None,
+        response_time_ms=duration_ms,
+        status_code=200
+    )
+
+    if method == "initialize":
+        return {
+            "jsonrpc": "2.0",
+            "id": req_id,
+            "result": {
+                "protocolVersion": "2024-11-05",
+                "capabilities": {
+                    "tools": {}
+                },
+                "serverInfo": {
+                    "name": "AlphaQuant-MCP",
+                    "version": "1.0.0"
+                }
+            }
+        }
+
+    elif method in ["notifications/initialized", "initialized"]:
+        return JSONResponse(status_code=200, content={})
+
+    elif method == "ping":
+        return {"jsonrpc": "2.0", "id": req_id, "result": {}}
+
+    elif method == "tools/list":
+        return {
+            "jsonrpc": "2.0",
+            "id": req_id,
+            "result": {
+                "tools": MCP_TOOLS_METADATA
+            }
+        }
+
+    elif method == "tools/call":
+        tool_name = params.get("name")
+        data = await get_latest_market_data()
+
+        if tool_name == "get_market_summary":
+            price = data["price"]
+            em = data["expected_move"]
+            res = {
+                "symbol": data.get("symbol", "SPX"),
+                "price": price,
+                "expected_move": em,
+                "upper_bound": round(price + em, 2),
+                "lower_bound": round(price - em, 2),
+                "vix": data["vix"],
+                "trend_status": data["trend_status"],
+                "predicted_direction": data["predicted_direction"],
+                "predicted_strength": data["predicted_strength"],
+                "centroid": data["centroid"],
+                "target_close": data["target_close"],
+                "deviation_from_centroid": round(price - data["centroid"], 2),
+                "distance_to_target": round(data["target_close"] - price, 2),
+                "timestamp": data.get("created_at")
+            }
+        elif tool_name == "get_expected_move":
+            price = data["price"]
+            em = data["expected_move"]
+            res = {
+                "symbol": data.get("symbol", "SPX"),
+                "price": price,
+                "expected_move": em,
+                "upper_bound": round(price + em, 2),
+                "lower_bound": round(price - em, 2),
+                "timestamp": data.get("created_at")
+            }
+        elif tool_name == "get_market_regime":
+            res = {
+                "symbol": data.get("symbol", "SPX"),
+                "vix": data["vix"],
+                "trend_status": data["trend_status"],
+                "predicted_direction": data["predicted_direction"],
+                "predicted_strength": data["predicted_strength"],
+                "timestamp": data.get("created_at")
+            }
+        elif tool_name == "get_reversion_levels":
+            price = data["price"]
+            res = {
+                "symbol": data.get("symbol", "SPX"),
+                "price": price,
+                "centroid": data["centroid"],
+                "target_close": data["target_close"],
+                "deviation_from_centroid": round(price - data["centroid"], 2),
+                "distance_to_target": round(data["target_close"] - price, 2),
+                "timestamp": data.get("created_at")
+            }
+        else:
+            return {
+                "jsonrpc": "2.0",
+                "id": req_id,
+                "error": {"code": -32601, "message": f"Herramienta desconocida: {tool_name}"}
+            }
+
+        return {
+            "jsonrpc": "2.0",
+            "id": req_id,
+            "result": {
+                "content": [
+                    {
+                        "type": "text",
+                        "text": json.dumps(res, indent=2, ensure_ascii=False)
+                    }
+                ]
+            }
+        }
+
+    else:
+        return {
+            "jsonrpc": "2.0",
+            "id": req_id,
+            "error": {"code": -32601, "message": f"Método no soportado: {method}"}
+        }
