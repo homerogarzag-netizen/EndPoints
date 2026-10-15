@@ -2,7 +2,7 @@ import time
 from pathlib import Path
 from fastapi import FastAPI, Request, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse, JSONResponse
+from fastapi.responses import PlainTextResponse, RedirectResponse
 
 from api.config import API_TITLE, API_VERSION
 from api.models import (
@@ -32,10 +32,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.middleware("http")
+async def vercel_path_normalizer(request: Request, call_next):
+    """
+    Normaliza la ruta ASGI en caso de que Vercel reescriba la petición a /api/index.py o /api/index.
+    """
+    path = request.scope.get("path", "")
+    if path in ["/api/index.py", "/api/index", "/api"]:
+        request.scope["path"] = "/"
+    return await call_next(request)
+
+
 LLMS_TXT_PATH = Path(__file__).resolve().parent.parent / "public" / "llms.txt"
 
 
 @app.get("/", summary="Ruta principal con metadatos y enlaces de descubrimiento")
+@app.get("/api", summary="Ruta principal con prefijo /api")
+@app.get("/api/index", summary="Ruta principal /api/index")
+@app.get("/api/index.py", summary="Ruta principal /api/index.py")
 async def root(request: Request, background_tasks: BackgroundTasks):
     start = time.perf_counter()
     duration_ms = (time.perf_counter() - start) * 1000
@@ -67,6 +82,7 @@ async def root(request: Request, background_tasks: BackgroundTasks):
 
 
 @app.get("/llms.txt", response_class=PlainTextResponse, summary="Manifiesto llms.txt para motores de IA")
+@app.get("/api/llms.txt", response_class=PlainTextResponse)
 async def get_llms_txt(request: Request, background_tasks: BackgroundTasks):
     start = time.perf_counter()
     content = ""
@@ -91,6 +107,7 @@ async def get_llms_txt(request: Request, background_tasks: BackgroundTasks):
 
 
 @app.get("/health", response_model=HealthResponse, summary="Verificación de estado de la API")
+@app.get("/api/health", response_model=HealthResponse)
 async def health():
     db_ok = await check_database_health()
     return HealthResponse(
@@ -100,11 +117,17 @@ async def health():
     )
 
 
+@app.get("/api/docs", include_in_schema=False)
+async def redirect_api_docs():
+    return RedirectResponse(url="/docs")
+
+
 @app.get(
     "/v1/market/expected-move",
     response_model=ExpectedMoveResponse,
     summary="Rango de volatilidad y recorrido esperado (Expected Move)"
 )
+@app.get("/api/v1/market/expected-move", response_model=ExpectedMoveResponse, include_in_schema=False)
 async def get_expected_move(request: Request, background_tasks: BackgroundTasks):
     start = time.perf_counter()
     data = await get_latest_market_data()
@@ -141,6 +164,7 @@ async def get_expected_move(request: Request, background_tasks: BackgroundTasks)
     response_model=RegimeResponse,
     summary="Régimen de mercado, VIX y sesgo direccional pronosticado"
 )
+@app.get("/api/v1/market/regime", response_model=RegimeResponse, include_in_schema=False)
 async def get_regime(request: Request, background_tasks: BackgroundTasks):
     start = time.perf_counter()
     data = await get_latest_market_data()
@@ -172,6 +196,7 @@ async def get_regime(request: Request, background_tasks: BackgroundTasks):
     response_model=LevelsResponse,
     summary="Niveles objetivo de cierre y centroide de reversión"
 )
+@app.get("/api/v1/market/levels", response_model=LevelsResponse, include_in_schema=False)
 async def get_levels(request: Request, background_tasks: BackgroundTasks):
     start = time.perf_counter()
     data = await get_latest_market_data()
@@ -210,6 +235,7 @@ async def get_levels(request: Request, background_tasks: BackgroundTasks):
     response_model=MarketSummaryResponse,
     summary="Resumen consolidado de la sesión en un solo payload compacto"
 )
+@app.get("/api/v1/market/summary", response_model=MarketSummaryResponse, include_in_schema=False)
 async def get_summary(request: Request, background_tasks: BackgroundTasks):
     start = time.perf_counter()
     data = await get_latest_market_data()
