@@ -383,12 +383,20 @@ async def mcp_streamable_endpoint(request: Request, background_tasks: Background
             "result": {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {
-                    "tools": {}
+                    "tools": {},
+                    "prompts": {}
                 },
                 "serverInfo": {
                     "name": "AlphaQuant-MCP",
-                    "version": "1.0.0"
-                }
+                    "version": "1.0.0",
+                    "description": "Real-time quantitative options analytics, SPX 0DTE Expected Move, VIX volatility regimes, and mean-reversion levels for autonomous trading agents."
+                },
+                "instructions": (
+                    "AlphaQuant provides real-time quantitative options metrics for SPX. "
+                    "Use get_market_summary for a consolidated snapshot, get_expected_move for intraday/0DTE volatility boundaries, "
+                    "get_market_regime for trend and direction confidence, and get_reversion_levels for centroid and close targets. "
+                    "All data is for research and computational purposes."
+                )
             }
         }
 
@@ -411,7 +419,43 @@ async def mcp_streamable_endpoint(request: Request, background_tasks: Background
         return {"jsonrpc": "2.0", "id": req_id, "result": {"resources": []}}
 
     elif method == "prompts/list":
-        return {"jsonrpc": "2.0", "id": req_id, "result": {"prompts": []}}
+        return {
+            "jsonrpc": "2.0",
+            "id": req_id,
+            "result": {
+                "prompts": [
+                    {
+                        "name": "analyze_spx_market_conditions",
+                        "description": "Analiza el estado cuantitativo actual del mercado SPX (Expected Move, VIX, sesgo y reversión).",
+                        "arguments": []
+                    },
+                    {
+                        "name": "check_0dte_expected_move",
+                        "description": "Evalúa el rango esperado 0DTE y bandas superior e inferior para la sesión.",
+                        "arguments": []
+                    }
+                ]
+            }
+        }
+
+    elif method == "prompts/get":
+        prompt_name = params.get("name", "analyze_spx_market_conditions")
+        return {
+            "jsonrpc": "2.0",
+            "id": req_id,
+            "result": {
+                "description": f"Instrucción para {prompt_name}",
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": {
+                            "type": "text",
+                            "text": f"Ejecuta el análisis de {prompt_name} llamando a la herramienta get_market_summary y entrega un reporte cuantitativo conciso."
+                        }
+                    }
+                ]
+            }
+        }
 
     elif method == "ai.smithery/events/list":
         return {"jsonrpc": "2.0", "id": req_id, "result": {"events": []}}
