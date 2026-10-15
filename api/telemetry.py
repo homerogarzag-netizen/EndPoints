@@ -19,7 +19,7 @@ def classify_user_agent(user_agent: str) -> str:
     ai_signatures = [
         "claude-code", "antigravity", "cursor", "langchain",
         "crewai", "autogpt", "openai", "mcp", "agent",
-        "copilot", "chatgpt", "lobe", "llamaindex"
+        "copilot", "chatgpt", "lobe", "llamaindex", "smithery", "arcade"
     ]
     if any(sig in ua for sig in ai_signatures):
         return "ai_agent"

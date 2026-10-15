@@ -407,6 +407,15 @@ async def mcp_streamable_endpoint(request: Request, background_tasks: Background
             }
         }
 
+    elif method == "resources/list":
+        return {"jsonrpc": "2.0", "id": req_id, "result": {"resources": []}}
+
+    elif method == "prompts/list":
+        return {"jsonrpc": "2.0", "id": req_id, "result": {"prompts": []}}
+
+    elif method == "ai.smithery/events/list":
+        return {"jsonrpc": "2.0", "id": req_id, "result": {"events": []}}
+
     elif method == "tools/call":
         tool_name = params.get("name")
         data = await get_latest_market_data()
