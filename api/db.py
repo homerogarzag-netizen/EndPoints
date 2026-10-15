@@ -1,10 +1,28 @@
 import logging
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from typing import Optional, Dict, Any
 import httpx
 from api.config import SUPABASE_URL, SUPABASE_KEY, DEBUG
 
 logger = logging.getLogger("db")
+
+def to_ny_iso_timestamp(raw_ts: Optional[str]) -> str:
+    """
+    Convierte cualquier marca de tiempo (UTC de Supabase) a la hora oficial de 
+    Nueva York (America/New_York / ET) manteniendo el estándar estricto ISO-8601 (offset -04:00 / -05:00).
+    """
+    if not raw_ts:
+        return datetime.now(ZoneInfo("America/New_York")).isoformat()
+    try:
+        clean_ts = raw_ts.replace("Z", "+00:00")
+        dt = datetime.fromisoformat(clean_ts)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        ny_dt = dt.astimezone(ZoneInfo("America/New_York"))
+        return ny_dt.isoformat()
+    except Exception:
+        return raw_ts
 
 # Datos de respaldo para pruebas locales o cuando no hay registros aún
 MOCK_MARKET_DATA = {
@@ -17,7 +35,7 @@ MOCK_MARKET_DATA = {
     "target_close": 5865.00,
     "predicted_direction": "UP",
     "predicted_strength": 0.82,
-    "created_at": datetime.now(timezone.utc).isoformat()
+    "created_at": datetime.now(ZoneInfo("America/New_York")).isoformat()
 }
 
 async def get_latest_market_data() -> Dict[str, Any]:
@@ -49,6 +67,8 @@ async def get_latest_market_data() -> Dict[str, Any]:
                 data = resp.json()
                 if data and isinstance(data, list) and len(data) > 0:
                     row = data[0]
+                    raw_ts = row.get("created_at")
+                    ny_ts = to_ny_iso_timestamp(raw_ts)
                     return {
                         "symbol": row.get("symbol", "SPX"),
                         "price": float(row.get("price", 0.0)),
@@ -59,7 +79,7 @@ async def get_latest_market_data() -> Dict[str, Any]:
                         "target_close": float(row.get("target_close", 0.0)),
                         "predicted_direction": str(row.get("predicted_direction", "SIDEWAYS")),
                         "predicted_strength": float(row.get("predicted_strength", 0.0)),
-                        "created_at": row.get("created_at") or datetime.now(timezone.utc).isoformat()
+                        "created_at": ny_ts
                     }
                 else:
                     if DEBUG:
@@ -126,12 +146,18 @@ async def get_telemetry_stats() -> Dict[str, Any]:
 
                 avg_latency = round(total_latency / count, 2) if count > 0 else 0.0
 
+                recent_calls = []
+                for r in rows[:15]:
+                    call_copy = dict(r)
+                    call_copy["created_at"] = to_ny_iso_timestamp(r.get("created_at"))
+                    recent_calls.append(call_copy)
+
                 return {
                     "sample_size": count,
                     "avg_response_time_ms": avg_latency,
                     "demand_by_endpoint": dict(sorted(by_endpoint.items(), key=lambda x: x[1], reverse=True)),
                     "demand_by_caller_type": dict(sorted(by_caller.items(), key=lambda x: x[1], reverse=True)),
-                    "recent_calls": rows[:15]
+                    "recent_calls": recent_calls
                 }
     except Exception as exc:
         if DEBUG:
