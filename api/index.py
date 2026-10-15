@@ -12,7 +12,7 @@ from api.models import (
     MarketSummaryResponse,
     HealthResponse
 )
-from api.db import get_latest_market_data, check_database_health
+from api.db import get_latest_market_data, check_database_health, get_telemetry_stats
 from api.telemetry import record_telemetry
 
 app = FastAPI(
@@ -48,9 +48,9 @@ LLMS_TXT_PATH = Path(__file__).resolve().parent.parent / "public" / "llms.txt"
 
 
 @app.get("/", summary="Ruta principal con metadatos y enlaces de descubrimiento")
-@app.get("/api", summary="Ruta principal con prefijo /api")
-@app.get("/api/index", summary="Ruta principal /api/index")
-@app.get("/api/index.py", summary="Ruta principal /api/index.py")
+@app.get("/api", include_in_schema=False)
+@app.get("/api/index", include_in_schema=False)
+@app.get("/api/index.py", include_in_schema=False)
 async def root(request: Request, background_tasks: BackgroundTasks):
     start = time.perf_counter()
     duration_ms = (time.perf_counter() - start) * 1000
@@ -76,13 +76,14 @@ async def root(request: Request, background_tasks: BackgroundTasks):
             "/v1/market/expected-move",
             "/v1/market/regime",
             "/v1/market/levels",
-            "/v1/market/summary"
+            "/v1/market/summary",
+            "/v1/telemetry/stats"
         ]
     }
 
 
 @app.get("/llms.txt", response_class=PlainTextResponse, summary="Manifiesto llms.txt para motores de IA")
-@app.get("/api/llms.txt", response_class=PlainTextResponse)
+@app.get("/api/llms.txt", response_class=PlainTextResponse, include_in_schema=False)
 async def get_llms_txt(request: Request, background_tasks: BackgroundTasks):
     start = time.perf_counter()
     content = ""
@@ -107,7 +108,7 @@ async def get_llms_txt(request: Request, background_tasks: BackgroundTasks):
 
 
 @app.get("/health", response_model=HealthResponse, summary="Verificación de estado de la API")
-@app.get("/api/health", response_model=HealthResponse)
+@app.get("/api/health", response_model=HealthResponse, include_in_schema=False)
 async def health():
     db_ok = await check_database_health()
     return HealthResponse(
@@ -120,6 +121,12 @@ async def health():
 @app.get("/api/docs", include_in_schema=False)
 async def redirect_api_docs():
     return RedirectResponse(url="/docs")
+
+
+@app.get("/v1/telemetry/stats", summary="Métricas de telemetría y demanda de agentes en tiempo real")
+@app.get("/api/v1/telemetry/stats", include_in_schema=False)
+async def get_stats():
+    return await get_telemetry_stats()
 
 
 @app.get(
