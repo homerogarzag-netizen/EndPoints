@@ -57,7 +57,8 @@ async def vercel_path_normalizer(request: Request, call_next):
 
 
 LLMS_TXT_PATH = Path(__file__).resolve().parent.parent / "public" / "llms.txt"
-DASHBOARD_HTML_PATH = Path(__file__).resolve().parent.parent / "public" / "dashboard.html"
+DASHBOARD_HTML_PATH = Path(__file__).resolve().parent / "dashboard.html"
+FALLBACK_DASHBOARD_PATH = Path(__file__).resolve().parent.parent / "public" / "dashboard.html"
 
 
 @app.get("/dashboard", response_class=HTMLResponse, summary="Panel de control visual de telemetría y consola interactiva de pruebas")
@@ -65,6 +66,8 @@ DASHBOARD_HTML_PATH = Path(__file__).resolve().parent.parent / "public" / "dashb
 async def get_dashboard():
     if DASHBOARD_HTML_PATH.exists():
         return HTMLResponse(content=DASHBOARD_HTML_PATH.read_text(encoding="utf-8"))
+    elif FALLBACK_DASHBOARD_PATH.exists():
+        return HTMLResponse(content=FALLBACK_DASHBOARD_PATH.read_text(encoding="utf-8"))
     return HTMLResponse(content="<h1>Dashboard file not found</h1>", status_code=404)
 
 
