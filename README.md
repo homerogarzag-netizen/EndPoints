@@ -3,6 +3,7 @@
 [![Production API](https://img.shields.io/badge/Production%20API-Online-success?style=for-the-badge&logo=vercel)](https://end-points.vercel.app/)
 [![Swagger Docs](https://img.shields.io/badge/Swagger-OpenAPI%20Docs-blue?style=for-the-badge&logo=swagger)](https://end-points.vercel.app/docs)
 [![Agent Protocol](https://img.shields.io/badge/LLMs.txt-Agent%20Ready-purple?style=for-the-badge)](https://end-points.vercel.app/llms.txt)
+[![Smithery Registry](https://img.shields.io/badge/Smithery-MCP%20Server-orange?style=for-the-badge)](https://smithery.ai/servers/@homero-garza-g/alphaquant)
 
 Microservicio de alta velocidad y baja latencia que entrega datos cuantitativos estructurados de **opciones, volatilidad y recorrido esperado (0DTE/SPX)** directamente a **Agentes de IA**, LLMs y sistemas algorítmicos.
 
