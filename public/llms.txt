@@ -1,0 +1,104 @@
+# AlphaQuant - AI Agent Market Intelligence API
+
+> Microservicio de alta velocidad y baja latencia para agentes de IA y traders algorítmicos.
+> Proporciona datos de régimen de volatilidad, recorrido esperado (0DTE/Daily Expected Move) y niveles cuantitativos de reversión a partir de análisis de opciones.
+
+## Información General
+
+- **Base URL:** `/v1`
+- **Protocolo:** REST / HTTP GET
+- **Formato:** JSON estricto, ultra-compacto, optimizado para bajo consumo de tokens.
+- **Autenticación:** Abierta durante fase de sondeo (telemetría anónima activada).
+- **CORS:** Habilitado para todos los orígenes (`*`).
+
+---
+
+## Endpoints Principales
+
+### 1. Recorrido Esperado y Bandas de Volatilidad
+- **Ruta:** `GET /v1/market/expected-move`
+- **Descripción:** Devuelve el precio spot actual, el Expected Move calculado para la sesión y las bandas superior e inferior (`price ± expected_move`).
+- **Respuesta JSON:**
+```json
+{
+  "symbol": "SPX",
+  "price": 5850.25,
+  "expected_move": 25.50,
+  "upper_bound": 5875.75,
+  "lower_bound": 5824.75,
+  "timestamp": "2026-10-15T15:30:00Z"
+}
+```
+
+### 2. Régimen de Mercado y Sesgo Direccional
+- **Ruta:** `GET /v1/market/regime`
+- **Descripción:** Proporciona el nivel del VIX, el régimen de volatilidad/tendencia y la dirección pronosticada con su nivel de confianza (0.0 a 1.0).
+- **Respuesta JSON:**
+```json
+{
+  "symbol": "SPX",
+  "vix": 16.20,
+  "trend_status": "bullish_expansion",
+  "predicted_direction": "UP",
+  "predicted_strength": 0.82,
+  "timestamp": "2026-10-15T15:30:00Z"
+}
+```
+
+### 3. Niveles Objetivo y Reversión a la Media
+- **Ruta:** `GET /v1/market/levels`
+- **Descripción:** Entrega el precio spot, el centroide cuantitativo (precio de equilibrio), el objetivo de cierre proyectado y las desviaciones calculadas en tiempo real.
+- **Respuesta JSON:**
+```json
+{
+  "symbol": "SPX",
+  "price": 5850.25,
+  "centroid": 5842.00,
+  "target_close": 5865.00,
+  "deviation_from_centroid": 8.25,
+  "distance_to_target": 14.75,
+  "timestamp": "2026-10-15T15:30:00Z"
+}
+```
+
+### 4. Resumen Consolidado de Sesión
+- **Ruta:** `GET /v1/market/summary`
+- **Descripción:** Consolida todas las métricas en una única llamada para minimizar roundtrips y tokens.
+- **Respuesta JSON:**
+```json
+{
+  "symbol": "SPX",
+  "price": 5850.25,
+  "expected_move": 25.50,
+  "upper_bound": 5875.75,
+  "lower_bound": 5824.75,
+  "vix": 16.20,
+  "trend_status": "bullish_expansion",
+  "predicted_direction": "UP",
+  "predicted_strength": 0.82,
+  "centroid": 5842.00,
+  "target_close": 5865.00,
+  "deviation_from_centroid": 8.25,
+  "distance_to_target": 14.75,
+  "timestamp": "2026-10-15T15:30:00Z"
+}
+```
+
+---
+
+## Casos de Uso para Agentes Autónomos
+
+1. **Selección de Strikes en Spreads / Iron Condors:**
+   - Un agente puede consultar `/v1/market/expected-move` para colocar sus alas (wings) o strikes vendidos fuera de las bandas `upper_bound` y `lower_bound`.
+
+2. **Filtro de Tendencia antes de Ejecutar Trades:**
+   - Un agente de scalping o swing trading consulta `/v1/market/regime`. Si `trend_status` es `compression` o `predicted_direction` es contradictoria a su señal, se abstiene de operar.
+
+3. **Toma de Ganancias y Trailing Stops:**
+   - Usando `/v1/market/levels`, el agente calibra sus órdenes limit cerca de `target_close` o `centroid` para maximizar el ratio riesgo/beneficio.
+
+---
+
+## Documentación OpenAPI Interactiva
+- Swagger UI: `/docs`
+- Especificación OpenAPI JSON: `/openapi.json`
