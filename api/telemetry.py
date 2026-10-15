@@ -48,7 +48,8 @@ async def record_telemetry(
     query_params: Dict[str, Any],
     client_ip: Optional[str],
     response_time_ms: float,
-    status_code: int = 200
+    status_code: int = 200,
+    headers: Optional[Dict[str, str]] = None
 ):
     """
     Registra la telemetría en segundo plano en Supabase.
@@ -56,7 +57,14 @@ async def record_telemetry(
     Si Supabase falla o no está configurado, la API continuará funcionando.
     """
     if not SUPABASE_URL or not SUPABASE_KEY:
-        # Modo local / sin credenciales: no bloquear
+        return
+
+    # Omitir peticiones automáticas de auto-refresco del dashboard para no ensuciar la métrica
+    if headers:
+        lower_headers = {str(k).lower(): str(v).lower() for k, v in headers.items()}
+        if lower_headers.get("x-internal-dashboard") == "true":
+            return
+    if str(query_params.get("internal", "")).lower() == "1":
         return
 
     try:
@@ -78,7 +86,7 @@ async def record_telemetry(
         }
 
         url = f"{SUPABASE_URL}/rest/v1/telemetria_sonda"
-        headers = {
+        req_headers = {
             "apikey": SUPABASE_KEY,
             "Authorization": f"Bearer {SUPABASE_KEY}",
             "Content-Type": "application/json",
@@ -86,7 +94,7 @@ async def record_telemetry(
         }
 
         async with httpx.AsyncClient(timeout=2.0) as client:
-            resp = await client.post(url, json=payload, headers=headers)
+            resp = await client.post(url, json=payload, headers=req_headers)
             if resp.status_code >= 400 and DEBUG:
                 logger.warning(f"Error registrando telemetría: {resp.status_code} - {resp.text}")
 

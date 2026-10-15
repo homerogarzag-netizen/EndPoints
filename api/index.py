@@ -61,6 +61,15 @@ DASHBOARD_HTML_PATH = Path(__file__).resolve().parent / "dashboard.html"
 FALLBACK_DASHBOARD_PATH = Path(__file__).resolve().parent.parent / "public" / "dashboard.html"
 
 
+def should_record_telemetry(request: Request) -> bool:
+    """Evita registrar peticiones internas automáticas del dashboard."""
+    if request.headers.get("x-internal-dashboard", "").lower() == "true":
+        return False
+    if str(request.query_params.get("internal", "")).lower() == "1":
+        return False
+    return True
+
+
 @app.get("/dashboard", response_class=HTMLResponse, summary="Panel de control visual de telemetría y consola interactiva de pruebas")
 @app.get("/api/dashboard", response_class=HTMLResponse, include_in_schema=False)
 async def get_dashboard():
@@ -79,16 +88,18 @@ async def root(request: Request, background_tasks: BackgroundTasks):
     start = time.perf_counter()
     duration_ms = (time.perf_counter() - start) * 1000
     
-    background_tasks.add_task(
-        record_telemetry,
-        endpoint="/",
-        method="GET",
-        user_agent=request.headers.get("user-agent", ""),
-        query_params=dict(request.query_params),
-        client_ip=request.client.host if request.client else None,
-        response_time_ms=duration_ms,
-        status_code=200
-    )
+    if should_record_telemetry(request):
+        background_tasks.add_task(
+            record_telemetry,
+            endpoint="/",
+            method="GET",
+            user_agent=request.headers.get("user-agent", ""),
+            query_params=dict(request.query_params),
+            client_ip=request.client.host if request.client else None,
+            response_time_ms=duration_ms,
+            status_code=200,
+            headers=dict(request.headers)
+        )
 
     return {
         "service": API_TITLE,
@@ -119,16 +130,18 @@ async def get_llms_txt(request: Request, background_tasks: BackgroundTasks):
         content = f"# {API_TITLE}\nEndpoints disponibles en /v1/market/summary"
 
     duration_ms = (time.perf_counter() - start) * 1000
-    background_tasks.add_task(
-        record_telemetry,
-        endpoint="/llms.txt",
-        method="GET",
-        user_agent=request.headers.get("user-agent", ""),
-        query_params=dict(request.query_params),
-        client_ip=request.client.host if request.client else None,
-        response_time_ms=duration_ms,
-        status_code=200
-    )
+    if should_record_telemetry(request):
+        background_tasks.add_task(
+            record_telemetry,
+            endpoint="/llms.txt",
+            method="GET",
+            user_agent=request.headers.get("user-agent", ""),
+            query_params=dict(request.query_params),
+            client_ip=request.client.host if request.client else None,
+            response_time_ms=duration_ms,
+            status_code=200,
+            headers=dict(request.headers)
+        )
 
     return PlainTextResponse(content, media_type="text/plain")
 
@@ -171,16 +184,18 @@ async def get_expected_move(request: Request, background_tasks: BackgroundTasks)
     lower = round(price - em, 2)
 
     duration_ms = (time.perf_counter() - start) * 1000
-    background_tasks.add_task(
-        record_telemetry,
-        endpoint="/v1/market/expected-move",
-        method="GET",
-        user_agent=request.headers.get("user-agent", ""),
-        query_params=dict(request.query_params),
-        client_ip=request.client.host if request.client else None,
-        response_time_ms=duration_ms,
-        status_code=200
-    )
+    if should_record_telemetry(request):
+        background_tasks.add_task(
+            record_telemetry,
+            endpoint="/v1/market/expected-move",
+            method="GET",
+            user_agent=request.headers.get("user-agent", ""),
+            query_params=dict(request.query_params),
+            client_ip=request.client.host if request.client else None,
+            response_time_ms=duration_ms,
+            status_code=200,
+            headers=dict(request.headers)
+        )
 
     return ExpectedMoveResponse(
         symbol=data.get("symbol", "SPX"),
@@ -203,16 +218,18 @@ async def get_regime(request: Request, background_tasks: BackgroundTasks):
     data = await get_latest_market_data()
 
     duration_ms = (time.perf_counter() - start) * 1000
-    background_tasks.add_task(
-        record_telemetry,
-        endpoint="/v1/market/regime",
-        method="GET",
-        user_agent=request.headers.get("user-agent", ""),
-        query_params=dict(request.query_params),
-        client_ip=request.client.host if request.client else None,
-        response_time_ms=duration_ms,
-        status_code=200
-    )
+    if should_record_telemetry(request):
+        background_tasks.add_task(
+            record_telemetry,
+            endpoint="/v1/market/regime",
+            method="GET",
+            user_agent=request.headers.get("user-agent", ""),
+            query_params=dict(request.query_params),
+            client_ip=request.client.host if request.client else None,
+            response_time_ms=duration_ms,
+            status_code=200,
+            headers=dict(request.headers)
+        )
 
     return RegimeResponse(
         symbol=data.get("symbol", "SPX"),
@@ -241,16 +258,18 @@ async def get_levels(request: Request, background_tasks: BackgroundTasks):
     dist_target = round(target_close - price, 2)
 
     duration_ms = (time.perf_counter() - start) * 1000
-    background_tasks.add_task(
-        record_telemetry,
-        endpoint="/v1/market/levels",
-        method="GET",
-        user_agent=request.headers.get("user-agent", ""),
-        query_params=dict(request.query_params),
-        client_ip=request.client.host if request.client else None,
-        response_time_ms=duration_ms,
-        status_code=200
-    )
+    if should_record_telemetry(request):
+        background_tasks.add_task(
+            record_telemetry,
+            endpoint="/v1/market/levels",
+            method="GET",
+            user_agent=request.headers.get("user-agent", ""),
+            query_params=dict(request.query_params),
+            client_ip=request.client.host if request.client else None,
+            response_time_ms=duration_ms,
+            status_code=200,
+            headers=dict(request.headers)
+        )
 
     return LevelsResponse(
         symbol=data.get("symbol", "SPX"),
@@ -279,16 +298,18 @@ async def get_summary(request: Request, background_tasks: BackgroundTasks):
     target_close = data["target_close"]
 
     duration_ms = (time.perf_counter() - start) * 1000
-    background_tasks.add_task(
-        record_telemetry,
-        endpoint="/v1/market/summary",
-        method="GET",
-        user_agent=request.headers.get("user-agent", ""),
-        query_params=dict(request.query_params),
-        client_ip=request.client.host if request.client else None,
-        response_time_ms=duration_ms,
-        status_code=200
-    )
+    if should_record_telemetry(request):
+        background_tasks.add_task(
+            record_telemetry,
+            endpoint="/v1/market/summary",
+            method="GET",
+            user_agent=request.headers.get("user-agent", ""),
+            query_params=dict(request.query_params),
+            client_ip=request.client.host if request.client else None,
+            response_time_ms=duration_ms,
+            status_code=200,
+            headers=dict(request.headers)
+        )
 
     return MarketSummaryResponse(
         symbol=data.get("symbol", "SPX"),
@@ -378,16 +399,18 @@ async def mcp_streamable_endpoint(request: Request, background_tasks: Background
     params = body.get("params", {})
 
     duration_ms = (time.perf_counter() - start) * 1000
-    background_tasks.add_task(
-        record_telemetry,
-        endpoint=f"/mcp?method={method}",
-        method="POST",
-        user_agent=request.headers.get("user-agent", ""),
-        query_params=dict(request.query_params),
-        client_ip=request.client.host if request.client else None,
-        response_time_ms=duration_ms,
-        status_code=200
-    )
+    if should_record_telemetry(request):
+        background_tasks.add_task(
+            record_telemetry,
+            endpoint=f"/mcp?method={method}",
+            method="POST",
+            user_agent=request.headers.get("user-agent", ""),
+            query_params=dict(request.query_params),
+            client_ip=request.client.host if request.client else None,
+            response_time_ms=duration_ms,
+            status_code=200,
+            headers=dict(request.headers)
+        )
 
     if method == "initialize":
         return {

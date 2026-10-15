@@ -42,13 +42,23 @@
         <i class="fa-solid fa-chart-line text-2xl"></i>
       </div>
       <div>
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
           <h1 class="text-xl md:text-2xl font-bold tracking-tight text-white">AlphaQuant <span class="text-emerald-400 text-sm font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">Monitor Ops</span></h1>
           <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
             <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Sistema En Vivo
           </span>
+          <span id="nyMarketStatus" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-700/50 text-slate-400 border border-slate-600">
+            <span class="h-1.5 w-1.5 rounded-full bg-slate-500"></span> Mercado Cerrado
+          </span>
         </div>
-        <p class="text-xs md:text-sm text-slate-400">Telemetría de Agentes de IA & Datos Cuantitativos de Opciones (SPX 0DTE)</p>
+        <div class="flex flex-wrap items-center gap-2 mt-1 text-xs md:text-sm text-slate-400">
+          <span>Telemetría de Agentes de IA & Datos Cuantitativos de Opciones (SPX 0DTE)</span>
+          <span class="text-slate-600">•</span>
+          <span class="text-emerald-400/95 font-mono flex items-center gap-1.5 bg-slate-900/70 px-2 py-0.5 rounded border border-slate-800">
+            <i class="fa-regular fa-clock text-[11px]"></i>
+            <span id="nyClock">Cargando hora NY...</span>
+          </span>
+        </div>
       </div>
     </div>
 
@@ -180,7 +190,7 @@
         <h2 class="text-base font-semibold text-white flex items-center gap-2">
           <i class="fa-solid fa-terminal text-cyan-400"></i> Consola Interactiva de Pruebas
         </h2>
-        <span class="text-xs text-slate-400">Prueba cada endpoint en 1 clic</span>
+        <span class="text-xs text-slate-400">Prueba manual para registrar en telemetría</span>
       </div>
 
       <!-- Quick Selector Buttons -->
@@ -229,7 +239,7 @@
       </div>
 
       <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs overflow-auto max-h-72 text-emerald-300">
-        <pre id="testOutput">// Presiona 'Probar' o selecciona un endpoint arriba para ver la respuesta en vivo.</pre>
+        <pre id="testOutput">// Presiona 'Probar' o selecciona cualquier endpoint de la botonera para ejecutar una prueba manual en tiempo real.</pre>
       </div>
     </div>
 
@@ -237,9 +247,9 @@
     <div class="glass-card p-6 rounded-2xl border border-slate-800 flex flex-col gap-4 lg:col-span-5">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <h2 class="text-base font-semibold text-white flex items-center gap-2">
-          <i class="fa-solid fa-tower-broadcast text-purple-400"></i> Feed de Consultas en Vivo
+          <i class="fa-solid fa-tower-broadcast text-purple-400"></i> Feed de Consultas (Hora NY)
         </h2>
-        <span class="text-xs text-slate-400">Últimas 15 peticiones</span>
+        <span class="text-xs text-slate-400">Últimas 15 peticiones registradas</span>
       </div>
 
       <div class="overflow-y-auto max-h-[380px] pr-1">
@@ -277,9 +287,112 @@
     // Colores para gráficos
     const CHART_COLORS = ['#10b981', '#06b6d4', '#8b5cf6', '#f59e0b', '#ec4899', '#64748b'];
 
+    // Formateador de Hora Nueva York (ET / EST / EDT)
+    function formatNYTime(dateInput) {
+      if (!dateInput) return '--';
+      try {
+        const d = new Date(dateInput);
+        return new Intl.DateTimeFormat('en-US', {
+          timeZone: 'America/New_York',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true
+        }).format(d) + ' ET';
+      } catch (e) {
+        return String(dateInput);
+      }
+    }
+
+    // Formateador de Fecha y Hora Nueva York
+    function formatNYDateTime(dateInput) {
+      if (!dateInput) return '--';
+      try {
+        const d = new Date(dateInput);
+        return new Intl.DateTimeFormat('en-US', {
+          timeZone: 'America/New_York',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true
+        }).format(d) + ' ET';
+      } catch (e) {
+        return String(dateInput);
+      }
+    }
+
+    // Reloj en Vivo de Nueva York y Estado de Mercado NYSE/CBOE (9:30 AM - 4:00 PM ET)
+    function updateNYClock() {
+      const clockEl = document.getElementById('nyClock');
+      const marketStatusEl = document.getElementById('nyMarketStatus');
+      const now = new Date();
+
+      if (clockEl) {
+        try {
+          const timeStr = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'America/New_York',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+          }).format(now);
+
+          const dateStr = new Intl.DateTimeFormat('es-MX', {
+            timeZone: 'America/New_York',
+            weekday: 'short',
+            day: 'numeric',
+            month: 'short'
+          }).format(now);
+
+          clockEl.innerText = `${timeStr} ET • ${dateStr}`;
+        } catch (e) {
+          clockEl.innerText = now.toTimeString();
+        }
+      }
+
+      if (marketStatusEl) {
+        try {
+          const parts = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'America/New_York',
+            weekday: 'short',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: false
+          }).formatToParts(now);
+
+          let weekday = '', hour = 0, minute = 0;
+          for (const p of parts) {
+            if (p.type === 'weekday') weekday = p.value;
+            if (p.type === 'hour') hour = parseInt(p.value, 10);
+            if (p.type === 'minute') minute = parseInt(p.value, 10);
+          }
+
+          const isWeekend = (weekday === 'Sat' || weekday === 'Sun');
+          const totalMinutes = hour * 60 + minute;
+          // Mercado regular NYSE/CBOE: 9:30 a 16:00 ET (570 min a 960 min)
+          const isMarketOpen = !isWeekend && (totalMinutes >= 570 && totalMinutes < 960);
+
+          if (isMarketOpen) {
+            marketStatusEl.className = "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30";
+            marketStatusEl.innerHTML = '<span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Mercado NY Abierto';
+          } else {
+            marketStatusEl.className = "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-700/50 text-slate-400 border border-slate-600";
+            marketStatusEl.innerHTML = '<span class="h-1.5 w-1.5 rounded-full bg-slate-500"></span> Mercado NY Cerrado';
+          }
+        } catch (e) {}
+      }
+    }
+
     async function fetchMarketSummary() {
       try {
-        const res = await fetch('/v1/market/summary');
+        // Marcamos con cabecera interna para excluir el sondeo automático de la telemetría
+        const res = await fetch('/v1/market/summary', {
+          headers: {
+            'X-Internal-Dashboard': 'true'
+          }
+        });
         if (!res.ok) return;
         const d = await res.json();
         document.getElementById('mktPrice').innerText = d.price ? `$${d.price.toFixed(2)}` : '--';
@@ -295,8 +408,7 @@
         document.getElementById('mktDistTarget').innerText = `Dist: ${d.distance_to_target > 0 ? '+' : ''}${d.distance_to_target}`;
         
         if (d.timestamp) {
-          const dt = new Date(d.timestamp);
-          document.getElementById('mktTime').innerText = dt.toLocaleTimeString();
+          document.getElementById('mktTime').innerText = `Cierre: ${formatNYTime(d.timestamp)}`;
         }
       } catch (err) {
         console.error('Error fetching market summary:', err);
@@ -305,7 +417,11 @@
 
     async function fetchTelemetryStats() {
       try {
-        const res = await fetch('/v1/telemetry/stats');
+        const res = await fetch('/v1/telemetry/stats', {
+          headers: {
+            'X-Internal-Dashboard': 'true'
+          }
+        });
         if (!res.ok) return;
         const s = await res.json();
 
@@ -394,7 +510,7 @@
     function updateFeedTable(calls) {
       const tbody = document.getElementById('telemetryFeedBody');
       if (!calls || calls.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="py-4 text-center text-slate-500">Sin peticiones recientes</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" class="py-4 text-center text-slate-500">Sin peticiones registradas</td></tr>';
         return;
       }
 
@@ -405,13 +521,13 @@
         else if (c.caller_type === 'python_client') badgeColor = 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
         else if (c.caller_type === 'browser') badgeColor = 'bg-slate-700 text-slate-300';
 
-        const timeStr = c.created_at ? new Date(c.created_at).toLocaleTimeString() : '--';
+        const timeStr = formatNYDateTime(c.created_at);
 
         return `
           <tr class="hover:bg-slate-800/40 transition">
             <td class="py-2.5 truncate max-w-[130px] font-medium text-slate-200" title="${c.endpoint}">
               ${c.endpoint}
-              <div class="text-[10px] text-slate-500">${timeStr}</div>
+              <div class="text-[10px] text-slate-400 font-sans">${timeStr}</div>
             </td>
             <td class="py-2.5">
               <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${badgeColor}">
@@ -432,6 +548,7 @@
       executeTest();
     }
 
+    // Ejecución Manual desde la consola de pruebas (SÍ se registra en telemetría)
     async function executeTest() {
       const path = document.getElementById('targetUrl').value.trim();
       const output = document.getElementById('testOutput');
@@ -439,12 +556,13 @@
       const latency = document.getElementById('testLatencyText');
       const btn = document.getElementById('btnExecute');
 
-      output.innerText = '// Enviando petición...';
+      output.innerText = '// Enviando petición manual...';
       btn.disabled = true;
       btn.classList.add('opacity-50');
 
       const t0 = performance.now();
       try {
+        // Petición de cliente normal (sin header interno) para registrar en telemetria_sonda
         const res = await fetch(path);
         const t1 = performance.now();
         const duration = Math.round(t1 - t0);
@@ -469,8 +587,8 @@
           output.innerText = text;
         }
 
-        // Refrescar métricas después de probar
-        setTimeout(fetchTelemetryStats, 500);
+        // Actualizar estadísticas de telemetría poco después para reflejar la prueba manual
+        setTimeout(fetchTelemetryStats, 700);
 
       } catch (err) {
         badge.classList.remove('hidden');
@@ -507,16 +625,17 @@
         }
       });
 
-      // Default 5s
+      // Intervalo por defecto de 5s
       autoRefreshTimer = setInterval(fetchAllData, 5000);
     }
 
     // Inicialización al cargar página
     window.addEventListener('DOMContentLoaded', () => {
+      updateNYClock();
+      setInterval(updateNYClock, 1000);
       fetchAllData();
       setupAutoRefresh();
-      // Ejecutar summary de bienvenida en el tester
-      setTimeout(executeTest, 800);
+      // NO ejecutamos executeTest() automáticamente en el arranque para evitar peticiones artificiales
     });
   </script>
 </body>
