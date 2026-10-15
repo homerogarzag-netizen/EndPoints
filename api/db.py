@@ -98,7 +98,7 @@ async def get_telemetry_stats() -> Dict[str, Any]:
     
     url = f"{SUPABASE_URL}/rest/v1/telemetria_sonda"
     params = {
-        "select": "endpoint,caller_type,response_time_ms",
+        "select": "id,endpoint,caller_type,user_agent,response_time_ms,created_at",
         "order": "created_at.desc",
         "limit": 500
     }
@@ -130,10 +130,11 @@ async def get_telemetry_stats() -> Dict[str, Any]:
                     "sample_size": count,
                     "avg_response_time_ms": avg_latency,
                     "demand_by_endpoint": dict(sorted(by_endpoint.items(), key=lambda x: x[1], reverse=True)),
-                    "demand_by_caller_type": dict(sorted(by_caller.items(), key=lambda x: x[1], reverse=True))
+                    "demand_by_caller_type": dict(sorted(by_caller.items(), key=lambda x: x[1], reverse=True)),
+                    "recent_calls": rows[:15]
                 }
     except Exception as exc:
         if DEBUG:
             logger.error(f"Error calculando métricas de telemetría: {exc}")
     
-    return {"sample_size": 0, "demand_by_endpoint": {}, "demand_by_caller_type": {}}
+    return {"sample_size": 0, "demand_by_endpoint": {}, "demand_by_caller_type": {}, "recent_calls": []}

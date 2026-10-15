@@ -1,5 +1,6 @@
 # AlphaQuant - Market Intelligence API for AI Agents 🚀
 
+[![Live Dashboard](https://img.shields.io/badge/Live%20Dashboard-Ops%20Monitor-10b981?style=for-the-badge&logo=speedtest)](https://end-points.vercel.app/dashboard)
 [![Production API](https://img.shields.io/badge/Production%20API-Online-success?style=for-the-badge&logo=vercel)](https://end-points.vercel.app/)
 [![Swagger Docs](https://img.shields.io/badge/Swagger-OpenAPI%20Docs-blue?style=for-the-badge&logo=swagger)](https://end-points.vercel.app/docs)
 [![Agent Protocol](https://img.shields.io/badge/LLMs.txt-Agent%20Ready-purple?style=for-the-badge)](https://end-points.vercel.app/llms.txt)

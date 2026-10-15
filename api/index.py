@@ -3,7 +3,7 @@ import time
 from pathlib import Path
 from fastapi import FastAPI, Request, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse, RedirectResponse, JSONResponse
+from fastapi.responses import PlainTextResponse, RedirectResponse, JSONResponse, HTMLResponse
 
 from api.config import API_TITLE, API_VERSION
 from api.models import (
@@ -57,6 +57,15 @@ async def vercel_path_normalizer(request: Request, call_next):
 
 
 LLMS_TXT_PATH = Path(__file__).resolve().parent.parent / "public" / "llms.txt"
+DASHBOARD_HTML_PATH = Path(__file__).resolve().parent.parent / "public" / "dashboard.html"
+
+
+@app.get("/dashboard", response_class=HTMLResponse, summary="Panel de control visual de telemetría y consola interactiva de pruebas")
+@app.get("/api/dashboard", response_class=HTMLResponse, include_in_schema=False)
+async def get_dashboard():
+    if DASHBOARD_HTML_PATH.exists():
+        return HTMLResponse(content=DASHBOARD_HTML_PATH.read_text(encoding="utf-8"))
+    return HTMLResponse(content="<h1>Dashboard file not found</h1>", status_code=404)
 
 
 @app.get("/", summary="Ruta principal con metadatos y enlaces de descubrimiento")
@@ -83,6 +92,7 @@ async def root(request: Request, background_tasks: BackgroundTasks):
         "version": API_VERSION,
         "status": "operational",
         "documentation": "/docs",
+        "dashboard": "/dashboard",
         "llms_discovery": "/llms.txt",
         "endpoints": [
             "/v1/market/expected-move",

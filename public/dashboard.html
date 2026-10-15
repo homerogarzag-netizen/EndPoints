@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlphaQuant | Monitor de Telemetría & Consola de Pruebas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              dark: '#0f172a',
+              card: '#1e293b',
+              border: '#334155'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #0b0f19; color: #f1f5f9; font-family: system-ui, -apple-system, sans-serif; }
+    .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(8px); border: 1px solid rgba(51, 65, 85, 0.7); }
+    pre { scrollbar-width: thin; scrollbar-color: #334155 #0f172a; }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 flex flex-col gap-6">
+
+  <!-- Header -->
+  <header class="glass-card rounded-2xl p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-slate-700 shadow-xl">
+    <div class="flex items-center gap-4">
+      <div class="h-12 w-12 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
+        <i class="fa-solid fa-chart-line text-2xl"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-3">
+          <h1 class="text-xl md:text-2xl font-bold tracking-tight text-white">AlphaQuant <span class="text-emerald-400 text-sm font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">Monitor Ops</span></h1>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Sistema En Vivo
+          </span>
+        </div>
+        <p class="text-xs md:text-sm text-slate-400">Telemetría de Agentes de IA & Datos Cuantitativos de Opciones (SPX 0DTE)</p>
+      </div>
+    </div>
+
+    <!-- Quick Actions & Auto-refresh -->
+    <div class="flex items-center gap-3 self-end md:self-auto">
+      <label class="flex items-center gap-2 text-xs text-slate-300 glass-card px-3 py-2 rounded-xl border border-slate-700">
+        <i class="fa-solid fa-arrows-rotate text-emerald-400"></i>
+        <span>Auto-refresco:</span>
+        <select id="refreshInterval" class="bg-slate-800 text-white border border-slate-600 rounded px-1.5 py-0.5 text-xs outline-none focus:border-emerald-500">
+          <option value="0">Pausado</option>
+          <option value="5" selected>5 seg</option>
+          <option value="15">15 seg</option>
+          <option value="30">30 seg</option>
+        </select>
+      </label>
+
+      <button onclick="fetchAllData()" class="glass-card hover:bg-slate-700 text-white px-3.5 py-2 rounded-xl border border-slate-700 flex items-center gap-2 text-xs font-medium transition active:scale-95 shadow">
+        <i class="fa-solid fa-rotate text-emerald-400" id="refreshIcon"></i>
+        <span>Actualizar</span>
+      </button>
+
+      <a href="/docs" target="_blank" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition shadow-lg shadow-emerald-600/20">
+        <i class="fa-solid fa-book-open"></i> Swagger
+      </a>
+    </div>
+  </header>
+
+  <!-- Market Pulse (Live SPX & Quant Levels) -->
+  <section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+    <div class="glass-card p-4 rounded-xl border border-slate-800 flex flex-col">
+      <span class="text-xs font-medium text-slate-400 uppercase tracking-wider flex items-center justify-between">
+        SPX Spot <i class="fa-solid fa-tag text-slate-500 text-[10px]"></i>
+      </span>
+      <span class="text-2xl font-bold text-white mt-1" id="mktPrice">--</span>
+      <span class="text-[11px] text-slate-400 mt-1" id="mktTime">Actualizando...</span>
+    </div>
+
+    <div class="glass-card p-4 rounded-xl border border-slate-800 flex flex-col">
+      <span class="text-xs font-medium text-slate-400 uppercase tracking-wider flex items-center justify-between">
+        Expected Move <i class="fa-solid fa-arrows-left-right text-slate-500 text-[10px]"></i>
+      </span>
+      <span class="text-2xl font-bold text-amber-400 mt-1" id="mktEM">--</span>
+      <span class="text-[11px] text-slate-400 mt-1" id="mktBands">[-- a --]</span>
+    </div>
+
+    <div class="glass-card p-4 rounded-xl border border-slate-800 flex flex-col">
+      <span class="text-xs font-medium text-slate-400 uppercase tracking-wider flex items-center justify-between">
+        VIX <i class="fa-solid fa-bolt text-slate-500 text-[10px]"></i>
+      </span>
+      <span class="text-2xl font-bold text-purple-400 mt-1" id="mktVix">--</span>
+      <span class="text-[11px] text-slate-400 mt-1" id="mktRegime">Régimen: --</span>
+    </div>
+
+    <div class="glass-card p-4 rounded-xl border border-slate-800 flex flex-col">
+      <span class="text-xs font-medium text-slate-400 uppercase tracking-wider flex items-center justify-between">
+        Sesgo Previsto <i class="fa-solid fa-compass text-slate-500 text-[10px]"></i>
+      </span>
+      <span class="text-2xl font-bold text-cyan-400 mt-1" id="mktBias">--</span>
+      <span class="text-[11px] text-slate-400 mt-1" id="mktStrength">Fuerza: --</span>
+    </div>
+
+    <div class="glass-card p-4 rounded-xl border border-slate-800 flex flex-col">
+      <span class="text-xs font-medium text-slate-400 uppercase tracking-wider flex items-center justify-between">
+        Centroide <i class="fa-solid fa-crosshairs text-slate-500 text-[10px]"></i>
+      </span>
+      <span class="text-2xl font-bold text-blue-400 mt-1" id="mktCentroid">--</span>
+      <span class="text-[11px] text-slate-400 mt-1" id="mktDev">Desviación: --</span>
+    </div>
+
+    <div class="glass-card p-4 rounded-xl border border-slate-800 flex flex-col">
+      <span class="text-xs font-medium text-slate-400 uppercase tracking-wider flex items-center justify-between">
+        Target Cierre <i class="fa-solid fa-flag-checkered text-slate-500 text-[10px]"></i>
+      </span>
+      <span class="text-2xl font-bold text-emerald-400 mt-1" id="mktTarget">--</span>
+      <span class="text-[11px] text-slate-400 mt-1" id="mktDistTarget">Distancia: --</span>
+    </div>
+  </section>
+
+  <!-- Telemetry Metrics & Demand Analytics Grid -->
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Telemetry Stats Cards & Distribution -->
+    <div class="glass-card p-6 rounded-2xl border border-slate-800 flex flex-col gap-6 lg:col-span-1">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h2 class="text-base font-semibold text-white flex items-center gap-2">
+          <i class="fa-solid fa-satellite-dish text-emerald-400"></i> Huella de Telemetría
+        </h2>
+        <span class="text-xs text-slate-400" id="statsSampleSize">Muestra: 0</span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/60">
+          <span class="text-xs text-slate-400">Total Peticiones</span>
+          <p class="text-2xl font-extrabold text-white mt-1" id="kpiTotalReq">0</p>
+        </div>
+        <div class="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/60">
+          <span class="text-xs text-slate-400">Latencia Media</span>
+          <p class="text-2xl font-extrabold text-emerald-400 mt-1" id="kpiAvgLatency">0 ms</p>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Tipos de Cliente (Callers)</h3>
+        <div class="h-48 relative flex items-center justify-center">
+          <canvas id="callerChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Demand by Endpoint Chart -->
+    <div class="glass-card p-6 rounded-2xl border border-slate-800 flex flex-col gap-4 lg:col-span-2">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h2 class="text-base font-semibold text-white flex items-center gap-2">
+          <i class="fa-solid fa-ranking-star text-amber-400"></i> Demanda Real por Endpoint (Sondeo)
+        </h2>
+        <span class="text-xs text-emerald-400 font-medium">Mayor volumen = Producto Estrella</span>
+      </div>
+      <div class="h-64 relative">
+        <canvas id="endpointChart"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Endpoint Playground & Live Feed -->
+  <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Left: Playground Tester -->
+    <div class="glass-card p-6 rounded-2xl border border-slate-800 flex flex-col gap-4 lg:col-span-7">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h2 class="text-base font-semibold text-white flex items-center gap-2">
+          <i class="fa-solid fa-terminal text-cyan-400"></i> Consola Interactiva de Pruebas
+        </h2>
+        <span class="text-xs text-slate-400">Prueba cada endpoint en 1 clic</span>
+      </div>
+
+      <!-- Quick Selector Buttons -->
+      <div class="flex flex-wrap gap-2">
+        <button onclick="selectEndpoint('/v1/market/summary')" class="endpoint-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition">
+          /v1/market/summary
+        </button>
+        <button onclick="selectEndpoint('/v1/market/expected-move')" class="endpoint-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition">
+          /v1/market/expected-move
+        </button>
+        <button onclick="selectEndpoint('/v1/market/regime')" class="endpoint-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition">
+          /v1/market/regime
+        </button>
+        <button onclick="selectEndpoint('/v1/market/levels')" class="endpoint-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition">
+          /v1/market/levels
+        </button>
+        <button onclick="selectEndpoint('/llms.txt')" class="endpoint-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition">
+          /llms.txt
+        </button>
+        <button onclick="selectEndpoint('/health')" class="endpoint-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition">
+          /health
+        </button>
+        <button onclick="selectEndpoint('/v1/telemetry/stats')" class="endpoint-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition">
+          /v1/telemetry/stats
+        </button>
+      </div>
+
+      <!-- Request bar -->
+      <div class="flex items-center gap-2 mt-2">
+        <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3 py-2 rounded-xl text-xs font-bold">GET</span>
+        <input type="text" id="targetUrl" value="/v1/market/summary" class="flex-1 bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-2 text-xs font-mono focus:border-emerald-500 outline-none">
+        <button onclick="executeTest()" id="btnExecute" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition active:scale-95 shadow-md shadow-emerald-600/20">
+          <i class="fa-solid fa-play"></i> Probar
+        </button>
+      </div>
+
+      <!-- Execution metadata & code viewer -->
+      <div class="flex items-center justify-between text-xs text-slate-400 mt-2 px-1">
+        <div class="flex items-center gap-4">
+          <span id="testStatusBadge" class="hidden px-2 py-0.5 rounded text-[11px] font-bold"></span>
+          <span id="testLatencyText"></span>
+        </div>
+        <button onclick="copyResponse()" class="hover:text-white transition flex items-center gap-1 text-[11px]">
+          <i class="fa-regular fa-copy"></i> Copiar JSON
+        </button>
+      </div>
+
+      <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs overflow-auto max-h-72 text-emerald-300">
+        <pre id="testOutput">// Presiona 'Probar' o selecciona un endpoint arriba para ver la respuesta en vivo.</pre>
+      </div>
+    </div>
+
+    <!-- Right: Live Telemetry Feed -->
+    <div class="glass-card p-6 rounded-2xl border border-slate-800 flex flex-col gap-4 lg:col-span-5">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h2 class="text-base font-semibold text-white flex items-center gap-2">
+          <i class="fa-solid fa-tower-broadcast text-purple-400"></i> Feed de Consultas en Vivo
+        </h2>
+        <span class="text-xs text-slate-400">Últimas 15 peticiones</span>
+      </div>
+
+      <div class="overflow-y-auto max-h-[380px] pr-1">
+        <table class="w-full text-left text-xs text-slate-300">
+          <thead class="text-[11px] uppercase tracking-wider text-slate-500 border-b border-slate-800">
+            <tr>
+              <th class="pb-2">Endpoint</th>
+              <th class="pb-2">Caller</th>
+              <th class="pb-2 text-right">Latencia</th>
+            </tr>
+          </thead>
+          <tbody id="telemetryFeedBody" class="divide-y divide-slate-800/60 font-mono">
+            <tr>
+              <td colspan="3" class="py-4 text-center text-slate-500">Cargando telemetría...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Footer Disclaimer -->
+  <footer class="glass-card rounded-2xl p-4 text-center text-xs text-slate-400 border border-slate-800">
+    <p class="max-w-4xl mx-auto">
+      <strong class="text-slate-300">Legal Disclaimer:</strong> AlphaQuant is an automated market data and quantitative modeling service provided strictly for educational, informational, and computational research purposes. None of the endpoints, metrics, or algorithmic outputs constitute financial, investment, legal, or trading advice. Trading options involves substantial risk of loss.
+    </p>
+  </footer>
+
+  <script>
+    let callerChartInstance = null;
+    let endpointChartInstance = null;
+    let autoRefreshTimer = null;
+
+    // Colores para gráficos
+    const CHART_COLORS = ['#10b981', '#06b6d4', '#8b5cf6', '#f59e0b', '#ec4899', '#64748b'];
+
+    async function fetchMarketSummary() {
+      try {
+        const res = await fetch('/v1/market/summary');
+        if (!res.ok) return;
+        const d = await res.json();
+        document.getElementById('mktPrice').innerText = d.price ? `$${d.price.toFixed(2)}` : '--';
+        document.getElementById('mktEM').innerText = d.expected_move ? `±${d.expected_move.toFixed(2)}` : '--';
+        document.getElementById('mktBands').innerText = `[${d.lower_bound} - ${d.upper_bound}]`;
+        document.getElementById('mktVix').innerText = d.vix ? d.vix.toFixed(2) : '--';
+        document.getElementById('mktRegime').innerText = `Régimen: ${d.trend_status || '--'}`;
+        document.getElementById('mktBias').innerText = d.predicted_direction || '--';
+        document.getElementById('mktStrength').innerText = `Fuerza: ${d.predicted_strength ? d.predicted_strength + '%' : '--'}`;
+        document.getElementById('mktCentroid').innerText = d.centroid ? `$${d.centroid.toFixed(2)}` : '--';
+        document.getElementById('mktDev').innerText = `Desv: ${d.deviation_from_centroid > 0 ? '+' : ''}${d.deviation_from_centroid}`;
+        document.getElementById('mktTarget').innerText = d.target_close ? `$${d.target_close.toFixed(2)}` : '--';
+        document.getElementById('mktDistTarget').innerText = `Dist: ${d.distance_to_target > 0 ? '+' : ''}${d.distance_to_target}`;
+        
+        if (d.timestamp) {
+          const dt = new Date(d.timestamp);
+          document.getElementById('mktTime').innerText = dt.toLocaleTimeString();
+        }
+      } catch (err) {
+        console.error('Error fetching market summary:', err);
+      }
+    }
+
+    async function fetchTelemetryStats() {
+      try {
+        const res = await fetch('/v1/telemetry/stats');
+        if (!res.ok) return;
+        const s = await res.json();
+
+        document.getElementById('statsSampleSize').innerText = `Muestra: ${s.sample_size || 0}`;
+        document.getElementById('kpiTotalReq').innerText = s.sample_size || 0;
+        document.getElementById('kpiAvgLatency').innerText = `${s.avg_response_time_ms || 0} ms`;
+
+        updateCallerChart(s.demand_by_caller_type || {});
+        updateEndpointChart(s.demand_by_endpoint || {});
+        updateFeedTable(s.recent_calls || []);
+      } catch (err) {
+        console.error('Error fetching stats:', err);
+      }
+    }
+
+    function updateCallerChart(data) {
+      const labels = Object.keys(data);
+      const values = Object.values(data);
+      const ctx = document.getElementById('callerChart').getContext('2d');
+
+      if (callerChartInstance) {
+        callerChartInstance.data.labels = labels;
+        callerChartInstance.data.datasets[0].data = values;
+        callerChartInstance.update();
+        return;
+      }
+
+      callerChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: values,
+            backgroundColor: CHART_COLORS,
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#94a3b8', boxWidth: 10, font: { size: 10 } } }
+          },
+          cutout: '65%'
+        }
+      });
+    }
+
+    function updateEndpointChart(data) {
+      const labels = Object.keys(data);
+      const values = Object.values(data);
+      const ctx = document.getElementById('endpointChart').getContext('2d');
+
+      if (endpointChartInstance) {
+        endpointChartInstance.data.labels = labels;
+        endpointChartInstance.data.datasets[0].data = values;
+        endpointChartInstance.update();
+        return;
+      }
+
+      endpointChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Consultas',
+            data: values,
+            backgroundColor: '#10b981',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { ticks: { color: '#94a3b8', font: { size: 11 } }, grid: { display: false } },
+            y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#1e293b' } }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+
+    function updateFeedTable(calls) {
+      const tbody = document.getElementById('telemetryFeedBody');
+      if (!calls || calls.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="py-4 text-center text-slate-500">Sin peticiones recientes</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = calls.map(c => {
+        let badgeColor = 'bg-slate-800 text-slate-300';
+        if (c.caller_type === 'ai_agent') badgeColor = 'bg-purple-500/20 text-purple-300 border border-purple-500/30';
+        else if (c.caller_type === 'cli_tool') badgeColor = 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30';
+        else if (c.caller_type === 'python_client') badgeColor = 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
+        else if (c.caller_type === 'browser') badgeColor = 'bg-slate-700 text-slate-300';
+
+        const timeStr = c.created_at ? new Date(c.created_at).toLocaleTimeString() : '--';
+
+        return `
+          <tr class="hover:bg-slate-800/40 transition">
+            <td class="py-2.5 truncate max-w-[130px] font-medium text-slate-200" title="${c.endpoint}">
+              ${c.endpoint}
+              <div class="text-[10px] text-slate-500">${timeStr}</div>
+            </td>
+            <td class="py-2.5">
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${badgeColor}">
+                ${c.caller_type}
+              </span>
+              <div class="text-[10px] text-slate-500 truncate max-w-[110px]" title="${c.user_agent || ''}">${c.user_agent || '-'}</div>
+            </td>
+            <td class="py-2.5 text-right font-mono text-emerald-400">
+              ${c.response_time_ms ? c.response_time_ms + ' ms' : '-'}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function selectEndpoint(path) {
+      document.getElementById('targetUrl').value = path;
+      executeTest();
+    }
+
+    async function executeTest() {
+      const path = document.getElementById('targetUrl').value.trim();
+      const output = document.getElementById('testOutput');
+      const badge = document.getElementById('testStatusBadge');
+      const latency = document.getElementById('testLatencyText');
+      const btn = document.getElementById('btnExecute');
+
+      output.innerText = '// Enviando petición...';
+      btn.disabled = true;
+      btn.classList.add('opacity-50');
+
+      const t0 = performance.now();
+      try {
+        const res = await fetch(path);
+        const t1 = performance.now();
+        const duration = Math.round(t1 - t0);
+
+        badge.classList.remove('hidden', 'bg-emerald-500/20', 'text-emerald-400', 'bg-red-500/20', 'text-red-400');
+        if (res.ok) {
+          badge.classList.add('bg-emerald-500/20', 'text-emerald-400', 'border', 'border-emerald-500/30');
+          badge.innerText = `${res.status} ${res.statusText || 'OK'}`;
+        } else {
+          badge.classList.add('bg-red-500/20', 'text-red-400', 'border', 'border-red-500/30');
+          badge.innerText = `${res.status} Error`;
+        }
+
+        latency.innerText = `Latencia: ${duration} ms`;
+
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const json = await res.json();
+          output.innerText = JSON.stringify(json, null, 2);
+        } else {
+          const text = await res.text();
+          output.innerText = text;
+        }
+
+        // Refrescar métricas después de probar
+        setTimeout(fetchTelemetryStats, 500);
+
+      } catch (err) {
+        badge.classList.remove('hidden');
+        badge.classList.add('bg-red-500/20', 'text-red-400');
+        badge.innerText = 'Network Error';
+        latency.innerText = '';
+        output.innerText = `Error ejecutando petición:\n${err.message}`;
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('opacity-50');
+      }
+    }
+
+    function copyResponse() {
+      const text = document.getElementById('testOutput').innerText;
+      navigator.clipboard.writeText(text);
+      alert('¡JSON copiado al portapapeles!');
+    }
+
+    async function fetchAllData() {
+      const icon = document.getElementById('refreshIcon');
+      icon.classList.add('fa-spin');
+      await Promise.all([fetchMarketSummary(), fetchTelemetryStats()]);
+      setTimeout(() => icon.classList.remove('fa-spin'), 600);
+    }
+
+    function setupAutoRefresh() {
+      const select = document.getElementById('refreshInterval');
+      select.addEventListener('change', () => {
+        const sec = parseInt(select.value);
+        if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+        if (sec > 0) {
+          autoRefreshTimer = setInterval(fetchAllData, sec * 1000);
+        }
+      });
+
+      // Default 5s
+      autoRefreshTimer = setInterval(fetchAllData, 5000);
+    }
+
+    // Inicialización al cargar página
+    window.addEventListener('DOMContentLoaded', () => {
+      fetchAllData();
+      setupAutoRefresh();
+      // Ejecutar summary de bienvenida en el tester
+      setTimeout(executeTest, 800);
+    });
+  </script>
+</body>
+</html>
