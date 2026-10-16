@@ -206,7 +206,13 @@
         </span>
       </div>
 
-      <div class="flex items-center gap-4 font-mono text-[11px]">
+      <div class="flex items-center gap-3 font-mono text-[11px]">
+        <span class="text-slate-400 flex items-center gap-1.5 bg-slate-950/80 px-2.5 py-0.5 rounded border border-slate-800 shadow-sm">
+          <i class="fa-solid fa-database text-amber-400"></i>
+          <span class="text-slate-400 text-[10px]">CORTE:</span>
+          <span class="text-amber-300 font-bold" id="liveDataTime">--:-- ET</span>
+        </span>
+        <span class="text-slate-600">|</span>
         <span class="text-slate-400 flex items-center gap-1.5">
           <i class="fa-solid fa-clock text-emerald-400"></i>
           <span class="text-emerald-300 font-bold" id="liveNyClock">--:--:-- ET</span>
@@ -251,7 +257,10 @@
       <div class="bg-slate-950/80 p-4 rounded-xl border border-slate-800 neon-box-green backdrop-blur">
         <div class="flex items-center justify-between text-xs text-slate-400 mb-1 border-b border-slate-800 pb-2">
           <span class="pixel-font text-[9px] text-emerald-400">SPX 0DTE RANGE</span>
-          <span class="text-[10px] text-emerald-500/80 font-mono">MODEL v1.0</span>
+          <span class="text-[10px] text-amber-300 font-mono flex items-center gap-1">
+            <span class="text-slate-500 text-[9px]">TICK:</span>
+            <span id="hudDataTime" class="font-bold">--:--:-- ET</span>
+          </span>
         </div>
         <div class="flex items-baseline justify-between mt-2">
           <span class="text-3xl font-extrabold text-white tracking-tight" id="hudSpot">$7,743.79</span>
@@ -332,7 +341,10 @@
           
           <div class="text-[11px] font-mono text-slate-400 mt-1 flex items-center justify-between">
             <span id="officeSubMetrics" class="text-slate-300">EM: 7,686.13 - 7,729.33 · VIX: 16.75</span>
-            <span class="text-slate-500 text-[10px]">en vivo (stream AlphaQuant)</span>
+            <span class="text-slate-400 text-[10px] flex items-center gap-1 font-mono">
+              <span class="text-slate-500">CORTE:</span>
+              <span class="text-amber-300 font-bold" id="officeLastDataTime">--:-- ET</span>
+            </span>
           </div>
 
           <!-- Status Pills Bar (AlphaQuant Real Stack) -->
@@ -1043,6 +1055,49 @@
         if (officeSpot) officeSpot.innerText = spotRaw;
         const officeSub = document.getElementById('officeSubMetrics');
         if (officeSub) officeSub.innerText = `EM: ${lower} - ${upper} · VIX: ${vix}`;
+
+        // Format Timestamp of the data snapshot
+        let timeLabel = '--:-- ET';
+        let fullTimeLabel = '--:--:-- ET';
+        let elapsedSuffix = '';
+        if (d.timestamp) {
+          try {
+            const dataDt = new Date(d.timestamp);
+            const timeParts = new Intl.DateTimeFormat('en-US', {
+              timeZone: 'America/New_York',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: false
+            }).formatToParts(dataDt);
+            
+            let h = '15', m = '55', s = '00';
+            for (const p of timeParts) {
+              if (p.type === 'hour') h = p.value;
+              if (p.type === 'minute') m = p.value;
+              if (p.type === 'second') s = p.value;
+            }
+            timeLabel = `${h}:${m} ET`;
+            fullTimeLabel = `${h}:${m}:${s} ET`;
+
+            const diffMins = Math.max(0, Math.floor((new Date() - dataDt) / 60000));
+            if (diffMins < 60) {
+              elapsedSuffix = ` (${diffMins}m)`;
+            } else {
+              elapsedSuffix = ` (cierre)`;
+            }
+          } catch (e) {
+            timeLabel = (d.timestamp.substring(11, 16) || '--:--') + ' ET';
+            fullTimeLabel = (d.timestamp.substring(11, 19) || '--:--:--') + ' ET';
+          }
+        }
+
+        const topDataEl = document.getElementById('liveDataTime');
+        if (topDataEl) topDataEl.innerText = `${timeLabel}${elapsedSuffix}`;
+        const officeDataEl = document.getElementById('officeLastDataTime');
+        if (officeDataEl) officeDataEl.innerText = `${timeLabel}${elapsedSuffix}`;
+        const hudDataEl = document.getElementById('hudDataTime');
+        if (hudDataEl) hudDataEl.innerText = fullTimeLabel;
 
         // Live update speech bubbles of each agent
         const b0 = document.getElementById('bubble0Dte');
