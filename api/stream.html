@@ -74,6 +74,119 @@
     .bar-2 { animation: soundBar 0.9s infinite ease-in-out 0.2s; }
     .bar-3 { animation: soundBar 1.4s infinite ease-in-out 0.4s; }
     .bar-4 { animation: soundBar 0.8s infinite ease-in-out 0.1s; }
+
+    /* Office Room & Floor Grid */
+    .office-room {
+      background-color: #11182c;
+      border: 2px solid #233154;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 0, 0, 0.6);
+    }
+    .office-wall {
+      background-color: #161e36;
+      border-bottom: 4px solid #2c3a5e;
+    }
+    .office-floor {
+      background-color: #12192d;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+      background-size: 22px 22px;
+    }
+
+    /* Pulsing glowing auras for active agent in office */
+    .pink-aura {
+      filter: drop-shadow(0 0 10px rgba(236, 72, 153, 0.95)) drop-shadow(0 0 20px rgba(236, 72, 153, 0.6));
+      animation: pulseGlow 1.8s infinite alternate;
+    }
+    .cyan-aura {
+      filter: drop-shadow(0 0 10px rgba(6, 182, 212, 0.95)) drop-shadow(0 0 20px rgba(6, 182, 212, 0.6));
+      animation: pulseGlow 1.8s infinite alternate;
+    }
+    .amber-aura {
+      filter: drop-shadow(0 0 10px rgba(234, 179, 8, 0.95)) drop-shadow(0 0 20px rgba(234, 179, 8, 0.6));
+      animation: pulseGlow 1.8s infinite alternate;
+    }
+    .green-aura {
+      filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.95)) drop-shadow(0 0 20px rgba(16, 185, 129, 0.6));
+      animation: pulseGlow 1.8s infinite alternate;
+    }
+    @keyframes pulseGlow {
+      0% { opacity: 0.85; }
+      100% { opacity: 1; transform: scale(1.02); }
+    }
+
+    /* Speech Bubble Styling */
+    .pixel-bubble {
+      position: absolute;
+      background: #ffffff;
+      color: #0f172a;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 800;
+      font-size: 9px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1.5px solid #000;
+      white-space: nowrap;
+      box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.6);
+      z-index: 30;
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+    .pixel-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 6px 5px 0 5px;
+      border-style: solid;
+      border-color: #ffffff transparent transparent transparent;
+    }
+    .pixel-bubble-pink {
+      border-color: #ec4899;
+      box-shadow: 0 0 10px rgba(236, 72, 153, 0.9), 2px 2px 0px rgba(0, 0, 0, 0.6);
+    }
+    .pixel-bubble-cyan {
+      border-color: #06b6d4;
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.9), 2px 2px 0px rgba(0, 0, 0, 0.6);
+    }
+    .pixel-bubble-amber {
+      border-color: #eab308;
+      box-shadow: 0 0 10px rgba(234, 179, 8, 0.9), 2px 2px 0px rgba(0, 0, 0, 0.6);
+    }
+    .pixel-bubble-green {
+      border-color: #10b981;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.9), 2px 2px 0px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Courier walking loop animation */
+    @keyframes courierPacing {
+      0% { transform: translateX(0px) scaleX(1); }
+      48% { transform: translateX(120px) scaleX(1); }
+      50% { transform: translateX(120px) scaleX(-1); }
+      98% { transform: translateX(0px) scaleX(-1); }
+      100% { transform: translateX(0px) scaleX(1); }
+    }
+    @keyframes courierSteps {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+    .courier-walk {
+      animation: courierPacing 13s infinite ease-in-out;
+    }
+    .courier-bob {
+      animation: courierSteps 0.35s infinite ease-in-out;
+    }
+
+    /* Wall clock ticking */
+    @keyframes clockTick {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .clock-hand {
+      transform-origin: 10px 10px;
+      animation: clockTick 60s steps(60) infinite;
+    }
   </style>
 </head>
 <body class="crt flex flex-col justify-between p-4 md:p-6 select-none">
@@ -201,81 +314,435 @@
 
     </div>
 
-    <!-- CENTER STAGE: The Animated Pixel-Art AI Trading Station -->
-    <div class="lg:col-span-6 flex flex-col items-center justify-center relative min-h-[440px]">
+    <!-- CENTER STAGE: Retro Pixel-Art OFICINA DEL BOT (Designed for 16:9 Stream & 9:16 Shorts Clipping) -->
+    <div class="lg:col-span-6 flex flex-col items-center justify-center relative">
       
-      <!-- Background Server Rack with Pulsing Lights -->
-      <div class="w-full max-w-[540px] bg-slate-950 p-6 rounded-2xl border-2 border-slate-800 relative shadow-2xl overflow-hidden">
+      <!-- Main Vertical Frame (9:16 friendly clip container) -->
+      <div class="w-full max-w-[530px] bg-slate-950 rounded-2xl border-2 border-slate-800 relative shadow-2xl overflow-hidden office-room">
         
-        <!-- Overhead Neon Sign -->
-        <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
-          <div class="flex items-center gap-2">
-            <span class="h-3 w-3 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span class="pixel-font text-[10px] text-emerald-400 tracking-wider">ALPHAQUANT OPS STATION</span>
+        <!-- TOP HEADER: OFICINA DEL BOT & Live Spot / Status -->
+        <div class="px-5 py-3.5 border-b-2 border-slate-800 bg-slate-900/90">
+          <div class="flex items-center justify-between">
+            <span class="pixel-font text-base md:text-lg text-cyan-400 font-bold tracking-wider neon-text-cyan">OFICINA DEL BOT</span>
+            <div class="flex items-baseline gap-2">
+              <span class="pixel-font text-[10px] text-slate-400 font-mono">SPX</span>
+              <span class="font-mono text-2xl md:text-3xl font-extrabold text-emerald-400 neon-text-green tracking-tight" id="officeSpxSpot">7,707.73</span>
+            </div>
           </div>
-          <span class="pixel-font text-[8px] text-slate-500">AUTONOMOUS RUNTIME</span>
-        </div>
-
-        <!-- 3 Pixel-Art Agent Workstations -->
-        <div class="grid grid-cols-3 gap-3 my-4">
           
-          <!-- Bot 1: Volatility Agent -->
-          <div class="flex flex-col items-center bg-slate-900/90 p-3 rounded-xl border border-emerald-500/30 bot-bob">
-            <div class="text-2xl mb-1">🤖</div>
-            <span class="pixel-font text-[8px] text-emerald-300 mb-1">AGENT_0DTE</span>
-            <div class="w-full bg-black/80 p-1.5 rounded font-mono text-[9px] text-emerald-400 border border-slate-800 text-center">
-              <span class="blink-fast">●</span> RUNNING
-            </div>
-            <span class="text-[9px] text-slate-400 mt-1 font-mono">EM: ±4.28</span>
+          <div class="text-[11px] font-mono text-slate-400 mt-1 flex items-center justify-between">
+            <span id="officeSubMetrics" class="text-slate-300">EM: 7,686.13 - 7,729.33 · VIX: 16.75</span>
+            <span class="text-slate-500 text-[10px]">en vivo (stream AlphaQuant)</span>
           </div>
 
-          <!-- Bot 2: Centroid Sentinel -->
-          <div class="flex flex-col items-center bg-slate-900/90 p-3 rounded-xl border border-cyan-500/30 bot-bob-delayed">
-            <div class="text-2xl mb-1">👾</div>
-            <span class="pixel-font text-[8px] text-cyan-300 mb-1">SENTINEL_GEX</span>
-            <div class="w-full bg-black/80 p-1.5 rounded font-mono text-[9px] text-cyan-400 border border-slate-800 text-center">
-              <span class="blink-fast">●</span> LOCKED
+          <!-- Status Pills Bar -->
+          <div class="flex flex-wrap gap-2 mt-2.5 text-[10px] font-mono">
+            <span class="px-2 py-0.5 rounded bg-slate-950/90 border border-emerald-500/40 text-emerald-300 flex items-center gap-1.5 shadow-sm">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Webhook
+            </span>
+            <span class="px-2 py-0.5 rounded bg-slate-950/90 border border-emerald-500/40 text-emerald-300 flex items-center gap-1.5 shadow-sm">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> AlphaQuant
+            </span>
+            <span class="px-2 py-0.5 rounded bg-slate-950/90 border border-emerald-500/40 text-emerald-300 flex items-center gap-1.5 shadow-sm">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Modo LIVE
+            </span>
+            <span class="px-2 py-0.5 rounded bg-slate-950/90 border border-cyan-500/40 text-cyan-300 flex items-center gap-1.5 shadow-sm">
+              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span> MCP Hub
+            </span>
+          </div>
+        </div>
+
+        <!-- CENTER ROOM: 2D Pixel-Art Office Floor -->
+        <div class="relative w-full h-[320px] overflow-hidden select-none border-b-2 border-slate-800 office-floor">
+          
+          <!-- Office Wall (Top 55px) -->
+          <div class="absolute top-0 left-0 right-0 h-[55px] office-wall flex items-center justify-between px-4 z-0">
+            <!-- Hanging Ivy (Top Left) -->
+            <div class="absolute top-1 left-3">
+              <svg width="22" height="34" viewBox="0 0 22 34" shape-rendering="crispEdges">
+                <rect x="4" y="0" width="14" height="7" fill="#9a3412" />
+                <rect x="2" y="5" width="18" height="2" fill="#7c2d12" />
+                <rect x="5" y="7" width="4" height="6" fill="#15803d" />
+                <rect x="3" y="13" width="4" height="7" fill="#16a34a" />
+                <rect x="5" y="20" width="3" height="6" fill="#22c55e" />
+                <rect x="13" y="7" width="5" height="8" fill="#16a34a" />
+                <rect x="15" y="15" width="4" height="10" fill="#15803d" />
+                <rect x="14" y="25" width="3" height="6" fill="#22c55e" />
+              </svg>
             </div>
-            <span class="text-[9px] text-slate-400 mt-1 font-mono">REV: $7,729</span>
+
+            <!-- Landscape Painting -->
+            <div class="absolute top-2 left-16">
+              <svg width="38" height="22" viewBox="0 0 38 22" shape-rendering="crispEdges">
+                <rect x="0" y="0" width="38" height="22" fill="#b45309" />
+                <rect x="2" y="2" width="34" height="18" fill="#38bdf8" />
+                <rect x="24" y="4" width="6" height="6" fill="#facc15" />
+                <polygon points="4,20 14,8 24,20" fill="#475569" />
+                <polygon points="12,10 14,8 16,10" fill="#ffffff" />
+                <polygon points="18,20 26,11 34,20" fill="#64748b" />
+                <polygon points="24,13 26,11 28,13" fill="#ffffff" />
+              </svg>
+            </div>
+
+            <!-- Whiteboard with Charts -->
+            <div class="absolute top-2 left-1/2 -translate-x-1/2">
+              <svg width="48" height="24" viewBox="0 0 48 24" shape-rendering="crispEdges">
+                <rect x="0" y="0" width="48" height="24" fill="#64748b" />
+                <rect x="2" y="2" width="44" height="20" fill="#f8fafc" />
+                <line x1="8" y1="5" x2="8" y2="18" stroke="#94a3b8" stroke-width="1" />
+                <rect x="6" y="8" width="4" height="6" fill="#10b981" />
+                <line x1="18" y1="6" x2="18" y2="19" stroke="#94a3b8" stroke-width="1" />
+                <rect x="16" y="11" width="4" height="6" fill="#ef4444" />
+                <line x1="28" y1="4" x2="28" y2="16" stroke="#94a3b8" stroke-width="1" />
+                <rect x="26" y="6" width="4" height="5" fill="#10b981" />
+                <polyline points="6,15 16,16 26,8 36,11 44,5" fill="none" stroke="#2563eb" stroke-width="1.5" />
+              </svg>
+            </div>
+
+            <!-- Analog Clock -->
+            <div class="absolute top-2 right-24">
+              <svg width="20" height="20" viewBox="0 0 20 20">
+                <circle cx="10" cy="10" r="9" fill="#ffffff" stroke="#1e293b" stroke-width="1.5" />
+                <circle cx="10" cy="10" r="1.5" fill="#ef4444" />
+                <line x1="10" y1="10" x2="10" y2="4" stroke="#0f172a" stroke-width="1.5" stroke-linecap="round" />
+                <line x1="10" y1="10" x2="14" y2="10" stroke="#0f172a" stroke-width="1.5" stroke-linecap="round" />
+                <line x1="10" y1="10" x2="10" y2="3" stroke="#ef4444" stroke-width="1" class="clock-hand" />
+              </svg>
+            </div>
+
+            <!-- Bookshelf on Wall -->
+            <div class="absolute top-2 right-4">
+              <svg width="44" height="24" viewBox="0 0 44 24" shape-rendering="crispEdges">
+                <rect x="0" y="0" width="44" height="24" fill="#78350f" />
+                <rect x="2" y="2" width="40" height="9" fill="#451a03" />
+                <rect x="2" y="13" width="40" height="9" fill="#451a03" />
+                <rect x="4" y="3" width="4" height="8" fill="#ef4444" />
+                <rect x="9" y="4" width="3" height="7" fill="#3b82f6" />
+                <rect x="13" y="3" width="5" height="8" fill="#10b981" />
+                <rect x="19" y="5" width="4" height="6" fill="#f59e0b" />
+                <rect x="24" y="3" width="4" height="8" fill="#8b5cf6" />
+                <rect x="29" y="4" width="4" height="7" fill="#ec4899" />
+                <rect x="34" y="3" width="4" height="8" fill="#06b6d4" />
+                <rect x="4" y="14" width="5" height="8" fill="#3b82f6" />
+                <rect x="10" y="15" width="4" height="7" fill="#eab308" />
+                <rect x="15" y="14" width="4" height="8" fill="#ef4444" />
+                <rect x="20" y="14" width="5" height="8" fill="#10b981" />
+                <rect x="26" y="15" width="4" height="7" fill="#a855f7" />
+                <rect x="31" y="14" width="5" height="8" fill="#f97316" />
+              </svg>
+            </div>
           </div>
 
-          <!-- Bot 3: Trend Dispatcher -->
-          <div class="flex flex-col items-center bg-slate-900/90 p-3 rounded-xl border border-purple-500/30 bot-bob-delayed2">
-            <div class="text-2xl mb-1">🧙‍♂️</div>
-            <span class="pixel-font text-[8px] text-purple-300 mb-1">PROPHET_VIX</span>
-            <div class="w-full bg-black/80 p-1.5 rounded font-mono text-[9px] text-purple-400 border border-slate-800 text-center">
-              <span class="blink-fast">●</span> CALIBRATING
+          <!-- ================= WORKSTATION 1: RECEPTOR (Top-Left) ================= -->
+          <div class="absolute top-[68px] left-[45px] z-10 cursor-pointer group" onclick="focusAgent(1)">
+            <!-- Speech Bubble -->
+            <div id="bubbleReceptor" class="pixel-bubble top-[-26px] left-[5px]">
+              Escuchando...
             </div>
-            <span class="text-[9px] text-slate-400 mt-1 font-mono">VIX: 16.4</span>
+            <!-- Character: RECEPTOR -->
+            <div id="charReceptor" class="absolute top-[-10px] left-[15px] z-10 transition-all">
+              <svg width="30" height="38" viewBox="0 0 16 21" shape-rendering="crispEdges">
+                <rect x="4" y="1" width="8" height="4" fill="#92400e" />
+                <rect x="3" y="3" width="2" height="4" fill="#92400e" />
+                <rect x="11" y="3" width="2" height="4" fill="#92400e" />
+                <rect x="4" y="4" width="8" height="5" fill="#fbd5b5" />
+                <rect x="5" y="6" width="2" height="1" fill="#0f172a" />
+                <rect x="9" y="6" width="2" height="1" fill="#0f172a" />
+                <rect x="3" y="9" width="10" height="7" fill="#1d4ed8" />
+                <rect x="7" y="9" width="2" height="4" fill="#ffffff" />
+                <rect x="7" y="10" width="2" height="4" fill="#ef4444" />
+                <rect x="2" y="12" width="2" height="4" fill="#1e40af" />
+                <rect x="12" y="12" width="2" height="4" fill="#1e40af" />
+                <rect x="2" y="16" width="3" height="2" fill="#fbd5b5" />
+                <rect x="11" y="16" width="3" height="2" fill="#fbd5b5" />
+                <rect x="4" y="16" width="3" height="5" fill="#1e293b" />
+                <rect x="9" y="16" width="3" height="5" fill="#1e293b" />
+              </svg>
+            </div>
+            <!-- Desk + CRT -->
+            <div class="relative z-20">
+              <svg width="78" height="44" viewBox="0 0 86 50" shape-rendering="crispEdges">
+                <rect x="4" y="14" width="78" height="6" fill="#c89f78" />
+                <rect x="2" y="12" width="82" height="4" fill="#dfbe9b" />
+                <rect x="2" y="16" width="82" height="2" fill="#a07855" />
+                <rect x="6" y="20" width="8" height="28" fill="#8c5832" />
+                <rect x="52" y="20" width="28" height="26" fill="#8c5832" />
+                <rect x="56" y="24" width="20" height="6" fill="#713f12" />
+                <rect x="63" y="26" width="6" height="2" fill="#fef08a" />
+                <rect x="56" y="34" width="20" height="6" fill="#713f12" />
+                <rect x="63" y="36" width="6" height="2" fill="#fef08a" />
+                <rect x="54" y="0" width="24" height="16" fill="#ded8c4" />
+                <rect x="53" y="1" width="2" height="14" fill="#b8b29c" />
+                <rect x="56" y="2" width="18" height="11" fill="#334155" />
+                <rect x="58" y="3" width="14" height="9" fill="#15803d" />
+                <rect x="60" y="5" width="8" height="2" fill="#4ade80" />
+                <rect x="60" y="8" width="10" height="1" fill="#86efac" />
+                <rect x="62" y="16" width="8" height="3" fill="#ded8c4" />
+                <rect x="59" y="19" width="14" height="2" fill="#b8b29c" />
+                <rect x="18" y="15" width="24" height="4" fill="#ded8c4" />
+                <rect x="20" y="16" width="20" height="2" fill="#475569" />
+              </svg>
+            </div>
+            <!-- Name Label Under Desk -->
+            <div class="text-center mt-0.5">
+              <span class="pixel-font text-[8px] text-cyan-400 font-bold tracking-wider">RECEPTOR</span>
+            </div>
+          </div>
+
+          <!-- ================= WORKSTATION 2: EJECUTOR (Top-Right) ================= -->
+          <div class="absolute top-[68px] right-[45px] z-10 cursor-pointer group" onclick="focusAgent(2)">
+            <!-- Speech Bubbles -->
+            <div id="bubbleEjecutor1" class="pixel-bubble top-[-26px] right-[10px]">
+              Listo
+            </div>
+            <div id="bubbleEjecutor2" class="pixel-bubble top-[18px] right-[75px]">
+              9 chequeos OK
+            </div>
+            <!-- Character: EJECUTOR -->
+            <div id="charEjecutor" class="absolute top-[-10px] right-[42px] z-10 transition-all">
+              <svg width="30" height="38" viewBox="0 0 16 21" shape-rendering="crispEdges">
+                <rect x="4" y="1" width="8" height="4" fill="#1c1917" />
+                <rect x="3" y="2" width="2" height="5" fill="#1c1917" />
+                <rect x="11" y="2" width="2" height="5" fill="#1c1917" />
+                <rect x="5" y="4" width="6" height="5" fill="#b45309" />
+                <rect x="6" y="6" width="1" height="1" fill="#ffffff" />
+                <rect x="9" y="6" width="1" height="1" fill="#ffffff" />
+                <rect x="3" y="9" width="10" height="7" fill="#ea580c" />
+                <rect x="7" y="9" width="2" height="3" fill="#ffffff" />
+                <rect x="2" y="12" width="2" height="4" fill="#c2410c" />
+                <rect x="12" y="12" width="2" height="4" fill="#c2410c" />
+                <rect x="2" y="16" width="3" height="2" fill="#b45309" />
+                <rect x="11" y="16" width="3" height="2" fill="#b45309" />
+                <rect x="4" y="16" width="3" height="5" fill="#0f172a" />
+                <rect x="9" y="16" width="3" height="5" fill="#0f172a" />
+              </svg>
+            </div>
+            <!-- Desk + CRT -->
+            <div class="relative z-20">
+              <svg width="78" height="44" viewBox="0 0 86 50" shape-rendering="crispEdges">
+                <rect x="4" y="14" width="78" height="6" fill="#c89f78" />
+                <rect x="2" y="12" width="82" height="4" fill="#dfbe9b" />
+                <rect x="2" y="16" width="82" height="2" fill="#a07855" />
+                <rect x="6" y="20" width="8" height="28" fill="#8c5832" />
+                <rect x="52" y="20" width="28" height="26" fill="#8c5832" />
+                <rect x="56" y="24" width="20" height="6" fill="#713f12" />
+                <rect x="63" y="26" width="6" height="2" fill="#fef08a" />
+                <rect x="56" y="34" width="20" height="6" fill="#713f12" />
+                <rect x="63" y="36" width="6" height="2" fill="#fef08a" />
+                <rect x="54" y="0" width="24" height="16" fill="#ded8c4" />
+                <rect x="53" y="1" width="2" height="14" fill="#b8b29c" />
+                <rect x="56" y="2" width="18" height="11" fill="#334155" />
+                <rect x="58" y="3" width="14" height="9" fill="#15803d" />
+                <rect x="60" y="5" width="8" height="2" fill="#4ade80" />
+                <rect x="60" y="8" width="10" height="1" fill="#86efac" />
+                <rect x="62" y="16" width="8" height="3" fill="#ded8c4" />
+                <rect x="59" y="19" width="14" height="2" fill="#b8b29c" />
+                <rect x="18" y="15" width="24" height="4" fill="#ded8c4" />
+                <rect x="20" y="16" width="20" height="2" fill="#475569" />
+              </svg>
+            </div>
+            <!-- Name Label Under Desk -->
+            <div class="text-center mt-0.5">
+              <span class="pixel-font text-[8px] text-amber-400 font-bold tracking-wider">EJECUTOR</span>
+            </div>
+          </div>
+
+          <!-- ================= WALKING COURIER IN AISLE ================= -->
+          <div class="absolute top-[135px] left-[155px] z-15 pointer-events-none courier-walk">
+            <div class="courier-bob">
+              <svg width="22" height="32" viewBox="0 0 14 20" shape-rendering="crispEdges">
+                <rect x="3" y="1" width="8" height="3" fill="#78350f" />
+                <rect x="4" y="4" width="6" height="4" fill="#fbd5b5" />
+                <rect x="7" y="5" width="2" height="1" fill="#0f172a" />
+                <rect x="3" y="8" width="8" height="5" fill="#f8fafc" />
+                <rect x="2" y="8" width="2" height="4" fill="#e2e8f0" />
+                <rect x="10" y="8" width="2" height="4" fill="#e2e8f0" />
+                <rect x="9" y="10" width="4" height="4" fill="#fef08a" stroke="#ca8a04" stroke-width="0.5" />
+                <rect x="4" y="13" width="3" height="5" fill="#2563eb" />
+                <rect x="7" y="13" width="3" height="5" fill="#1d4ed8" />
+                <rect x="3" y="18" width="4" height="2" fill="#0f172a" />
+                <rect x="7" y="18" width="4" height="2" fill="#0f172a" />
+              </svg>
+            </div>
+          </div>
+
+          <!-- Center Floor Wastebasket & Small Table -->
+          <div class="absolute top-[185px] left-[185px] z-10">
+            <svg width="18" height="22" viewBox="0 0 20 24" shape-rendering="crispEdges">
+              <rect x="3" y="8" width="14" height="15" fill="#64748b" />
+              <rect x="2" y="6" width="16" height="2" fill="#475569" />
+              <rect x="5" y="4" width="5" height="4" fill="#ffffff" />
+              <rect x="11" y="5" width="4" height="3" fill="#e2e8f0" />
+            </svg>
+          </div>
+          <div class="absolute top-[180px] left-[225px] z-10">
+            <svg width="32" height="24" viewBox="0 0 34 26" shape-rendering="crispEdges">
+              <rect x="2" y="8" width="30" height="5" fill="#c89f78" />
+              <rect x="0" y="6" width="34" height="3" fill="#dfbe9b" />
+              <rect x="4" y="13" width="5" height="12" fill="#8c5832" />
+              <rect x="25" y="13" width="5" height="12" fill="#8c5832" />
+              <rect x="13" y="1" width="6" height="6" fill="#ffffff" />
+              <rect x="19" y="2" width="2" height="3" fill="#ffffff" />
+              <rect x="14" y="2" width="4" height="2" fill="#78350f" />
+            </svg>
+          </div>
+
+          <!-- ================= WORKSTATION 3: CONTADOR (Bottom-Left) ================= -->
+          <div class="absolute top-[180px] left-[45px] z-10 cursor-pointer group" onclick="focusAgent(0)">
+            <!-- Speech Bubble with Neon Glow -->
+            <div id="bubbleContador" class="pixel-bubble pixel-bubble-pink top-[-26px] left-[0px]">
+              Libro al día
+            </div>
+            <!-- Character: CONTADOR (With Glowing Halo Aura) -->
+            <div id="charContador" class="absolute top-[-10px] left-[15px] z-10 transition-all pink-aura">
+              <svg width="30" height="38" viewBox="0 0 16 21" shape-rendering="crispEdges">
+                <rect x="4" y="1" width="8" height="4" fill="#0f172a" />
+                <rect x="3" y="3" width="2" height="4" fill="#0f172a" />
+                <rect x="11" y="3" width="2" height="4" fill="#0f172a" />
+                <rect x="5" y="4" width="6" height="5" fill="#fed7aa" />
+                <rect x="6" y="6" width="1" height="1" fill="#000000" />
+                <rect x="9" y="6" width="1" height="1" fill="#000000" />
+                <rect x="3" y="9" width="10" height="7" fill="#e11d48" />
+                <rect x="2" y="12" width="2" height="4" fill="#be123c" />
+                <rect x="12" y="12" width="2" height="4" fill="#be123c" />
+                <rect x="2" y="16" width="3" height="2" fill="#fed7aa" />
+                <rect x="11" y="16" width="3" height="2" fill="#fed7aa" />
+                <rect x="4" y="16" width="3" height="5" fill="#18181b" />
+                <rect x="9" y="16" width="3" height="5" fill="#18181b" />
+              </svg>
+            </div>
+            <!-- Desk + CRT -->
+            <div class="relative z-20">
+              <svg width="78" height="44" viewBox="0 0 86 50" shape-rendering="crispEdges">
+                <rect x="4" y="14" width="78" height="6" fill="#c89f78" />
+                <rect x="2" y="12" width="82" height="4" fill="#dfbe9b" />
+                <rect x="2" y="16" width="82" height="2" fill="#a07855" />
+                <rect x="6" y="20" width="8" height="28" fill="#8c5832" />
+                <rect x="52" y="20" width="28" height="26" fill="#8c5832" />
+                <rect x="56" y="24" width="20" height="6" fill="#713f12" />
+                <rect x="63" y="26" width="6" height="2" fill="#fef08a" />
+                <rect x="56" y="34" width="20" height="6" fill="#713f12" />
+                <rect x="63" y="36" width="6" height="2" fill="#fef08a" />
+                <rect x="54" y="0" width="24" height="16" fill="#ded8c4" />
+                <rect x="53" y="1" width="2" height="14" fill="#b8b29c" />
+                <rect x="56" y="2" width="18" height="11" fill="#334155" />
+                <rect x="58" y="3" width="14" height="9" fill="#15803d" />
+                <rect x="60" y="5" width="8" height="2" fill="#4ade80" />
+                <rect x="60" y="8" width="10" height="1" fill="#86efac" />
+                <rect x="62" y="16" width="8" height="3" fill="#ded8c4" />
+                <rect x="59" y="19" width="14" height="2" fill="#b8b29c" />
+                <rect x="18" y="15" width="24" height="4" fill="#ded8c4" />
+                <rect x="20" y="16" width="20" height="2" fill="#475569" />
+              </svg>
+            </div>
+            <!-- Name Label Under Desk -->
+            <div class="text-center mt-0.5">
+              <span class="pixel-font text-[8px] text-pink-400 font-bold tracking-wider">CONTADOR</span>
+            </div>
+          </div>
+
+          <!-- ================= WORKSTATION 4: VIGILANTE (Bottom-Right) ================= -->
+          <div class="absolute top-[180px] right-[45px] z-10 cursor-pointer group" onclick="focusAgent(3)">
+            <!-- Speech Bubble -->
+            <div id="bubbleVigilante" class="pixel-bubble top-[-26px] right-[10px]">
+              VIX tranquilo
+            </div>
+            <!-- Character: VIGILANTE -->
+            <div id="charVigilante" class="absolute top-[-10px] right-[42px] z-10 transition-all">
+              <svg width="30" height="38" viewBox="0 0 16 21" shape-rendering="crispEdges">
+                <rect x="4" y="1" width="8" height="4" fill="#78350f" />
+                <rect x="2" y="3" width="2" height="4" fill="#94a3b8" />
+                <rect x="12" y="3" width="2" height="4" fill="#94a3b8" />
+                <rect x="3" y="1" width="10" height="1" fill="#94a3b8" />
+                <rect x="4" y="4" width="8" height="5" fill="#fbd5b5" />
+                <rect x="5" y="6" width="2" height="1" fill="#0f172a" />
+                <rect x="9" y="6" width="2" height="1" fill="#0f172a" />
+                <rect x="3" y="9" width="10" height="7" fill="#059669" />
+                <rect x="2" y="12" width="2" height="4" fill="#047857" />
+                <rect x="12" y="12" width="2" height="4" fill="#047857" />
+                <rect x="2" y="16" width="3" height="2" fill="#fbd5b5" />
+                <rect x="11" y="16" width="3" height="2" fill="#fbd5b5" />
+                <rect x="4" y="16" width="3" height="5" fill="#1e293b" />
+                <rect x="9" y="16" width="3" height="5" fill="#1e293b" />
+              </svg>
+            </div>
+            <!-- Desk + CRT -->
+            <div class="relative z-20">
+              <svg width="78" height="44" viewBox="0 0 86 50" shape-rendering="crispEdges">
+                <rect x="4" y="14" width="78" height="6" fill="#c89f78" />
+                <rect x="2" y="12" width="82" height="4" fill="#dfbe9b" />
+                <rect x="2" y="16" width="82" height="2" fill="#a07855" />
+                <rect x="6" y="20" width="8" height="28" fill="#8c5832" />
+                <rect x="52" y="20" width="28" height="26" fill="#8c5832" />
+                <rect x="56" y="24" width="20" height="6" fill="#713f12" />
+                <rect x="63" y="26" width="6" height="2" fill="#fef08a" />
+                <rect x="56" y="34" width="20" height="6" fill="#713f12" />
+                <rect x="63" y="36" width="6" height="2" fill="#fef08a" />
+                <rect x="54" y="0" width="24" height="16" fill="#ded8c4" />
+                <rect x="53" y="1" width="2" height="14" fill="#b8b29c" />
+                <rect x="56" y="2" width="18" height="11" fill="#334155" />
+                <rect x="58" y="3" width="14" height="9" fill="#15803d" />
+                <rect x="60" y="5" width="8" height="2" fill="#4ade80" />
+                <rect x="60" y="8" width="10" height="1" fill="#86efac" />
+                <rect x="62" y="16" width="8" height="3" fill="#ded8c4" />
+                <rect x="59" y="19" width="14" height="2" fill="#b8b29c" />
+                <rect x="18" y="15" width="24" height="4" fill="#ded8c4" />
+                <rect x="20" y="16" width="20" height="2" fill="#475569" />
+              </svg>
+            </div>
+            <!-- Name Label Under Desk -->
+            <div class="text-center mt-0.5">
+              <span class="pixel-font text-[8px] text-emerald-400 font-bold tracking-wider">VIGILANTE</span>
+            </div>
+          </div>
+
+          <!-- Bottom Corner Plants -->
+          <div class="absolute bottom-1 left-2 z-25 pointer-events-none">
+            <svg width="28" height="38" viewBox="0 0 34 48" shape-rendering="crispEdges">
+              <rect x="8" y="32" width="18" height="14" fill="#c2410c" />
+              <rect x="6" y="30" width="22" height="3" fill="#ea580c" />
+              <rect x="8" y="44" width="18" height="2" fill="#9a3412" />
+              <rect x="16" y="14" width="2" height="16" fill="#14532d" />
+              <rect x="10" y="8" width="8" height="8" fill="#15803d" />
+              <rect x="6" y="12" width="6" height="8" fill="#16a34a" />
+              <rect x="18" y="6" width="8" height="9" fill="#22c55e" />
+              <rect x="22" y="12" width="8" height="8" fill="#15803d" />
+              <rect x="12" y="18" width="8" height="7" fill="#16a34a" />
+              <rect x="18" y="18" width="8" height="8" fill="#15803d" />
+            </svg>
+          </div>
+          <div class="absolute bottom-1 right-2 z-25 pointer-events-none">
+            <svg width="28" height="38" viewBox="0 0 34 48" shape-rendering="crispEdges">
+              <rect x="8" y="32" width="18" height="14" fill="#c2410c" />
+              <rect x="6" y="30" width="22" height="3" fill="#ea580c" />
+              <rect x="8" y="44" width="18" height="2" fill="#9a3412" />
+              <rect x="16" y="14" width="2" height="16" fill="#14532d" />
+              <rect x="10" y="8" width="8" height="8" fill="#15803d" />
+              <rect x="6" y="12" width="6" height="8" fill="#16a34a" />
+              <rect x="18" y="6" width="8" height="9" fill="#22c55e" />
+              <rect x="22" y="12" width="8" height="8" fill="#15803d" />
+              <rect x="12" y="18" width="8" height="7" fill="#16a34a" />
+              <rect x="18" y="18" width="8" height="8" fill="#15803d" />
+            </svg>
           </div>
 
         </div>
 
-        <!-- Terminal Console (Typing Agent Live Activity) -->
-        <div class="bg-black/95 p-3.5 rounded-xl border border-slate-800 font-mono text-xs text-emerald-400 mt-3 relative overflow-hidden">
-          <div class="flex items-center justify-between text-[10px] text-slate-500 border-b border-slate-900 pb-1 mb-2">
-            <span>TERMINAL_OUTPUT.LOG</span>
-            <span class="text-emerald-500">STREAMING</span>
+        <!-- ================= BOTTOM FOCUSED AGENT INSPECTOR CARD ================= -->
+        <div id="inspectorCard" class="m-3 p-3.5 rounded-xl border-2 transition-all duration-500 cursor-pointer border-pink-500 bg-pink-950/20 shadow-lg shadow-pink-500/10" onclick="cycleNextAgent()">
+          <div class="flex items-center justify-between text-xs mb-1.5">
+            <span id="inspectorTitle" class="pixel-font text-xs font-bold text-pink-400">CONTADOR</span>
+            <span class="font-mono text-[10px] text-slate-400 flex items-center gap-1.5">
+              <span id="inspectorDot" class="w-2 h-2 rounded-sm bg-pink-500"></span> AUTO · <span id="inspectorCountdown">7</span> s
+            </span>
           </div>
-          <div id="liveAgentLogs" class="space-y-1 text-[11px] max-h-24 overflow-hidden">
-            <div><span class="text-slate-500">[12:40:01]</span> <span class="text-cyan-400">AGENT_0DTE</span> :: Expected Move actualizando en bandas SPX...</div>
-            <div><span class="text-slate-500">[12:40:03]</span> <span class="text-purple-400">PROPHET_VIX</span> :: VIX estable en 16.41 (Régimen Bullish).</div>
-            <div><span class="text-slate-500">[12:40:05]</span> <span class="text-emerald-400">SENTINEL_GEX</span> :: Centroide 7,729.37 alineado a cierre 7,745.95.</div>
-          </div>
-        </div>
-
-        <!-- Bottom Ambient Music & Waveform Indicator -->
-        <div class="mt-4 flex items-center justify-between pt-3 border-t border-slate-800/80 text-xs text-slate-400">
-          <div class="flex items-center gap-2">
-            <i class="fa-solid fa-headphones text-emerald-400"></i>
-            <span class="text-[11px] font-mono">BGM: <span class="text-slate-300">AlphaQuant Lofi Beats (Chill 24/7)</span></span>
-          </div>
-          <!-- Sound visualizer bars -->
-          <div class="flex items-end gap-1 h-5">
-            <span class="w-1 bg-emerald-400 bar-1 rounded-full"></span>
-            <span class="w-1 bg-cyan-400 bar-2 rounded-full"></span>
-            <span class="w-1 bg-amber-400 bar-3 rounded-full"></span>
-            <span class="w-1 bg-purple-400 bar-4 rounded-full"></span>
+          <h3 id="inspectorHeadline" class="text-sm md:text-base font-bold text-white tracking-wide">Sin posiciones abiertas hoy</h3>
+          <p id="inspectorDescription" class="text-xs text-slate-300 mt-1 leading-relaxed">
+            Registra cada posición, el crédito recibido y, al cierre, el resultado.
+          </p>
+          <div class="mt-2.5 pt-2 border-t border-slate-800/80 text-[10px] font-mono text-slate-400 flex items-center justify-between">
+            <span id="inspectorAction">Última acción: 10/16 11:58 · SPX VERTICAL</span>
+            <span class="text-[9px] text-slate-500 uppercase">Click para cambiar</span>
           </div>
         </div>
 
@@ -415,6 +882,129 @@
       }
     }
 
+    // ================= AGENT FOCUS STATE MACHINE =================
+    const AGENTS = [
+      {
+        name: "CONTADOR",
+        color: "pink",
+        borderClass: "border-pink-500 bg-pink-950/20 shadow-pink-500/10",
+        titleClass: "text-pink-400",
+        dotClass: "bg-pink-500",
+        charId: "charContador",
+        auraClass: "pink-aura",
+        bubbleId: "bubbleContador",
+        bubbleAuraClass: "pixel-bubble-pink",
+        headline: "Sin posiciones abiertas hoy",
+        description: "Registra cada posición, el crédito recibido y, al cierre, el resultado.",
+        action: "SPX VERTICAL MONITOR"
+      },
+      {
+        name: "RECEPTOR",
+        color: "cyan",
+        borderClass: "border-cyan-500 bg-cyan-950/20 shadow-cyan-500/10",
+        titleClass: "text-cyan-400",
+        dotClass: "bg-cyan-500",
+        charId: "charReceptor",
+        auraClass: "cyan-aura",
+        bubbleId: "bubbleReceptor",
+        bubbleAuraClass: "pixel-bubble-cyan",
+        headline: "Escuchando ticks de mercado NYSE / CBOE",
+        description: "Ingesta y procesa cotizaciones del SPX, spreads de opciones y telemetría en tiempo real.",
+        action: "WEBSOCKET TICK INGESTED"
+      },
+      {
+        name: "EJECUTOR",
+        color: "amber",
+        borderClass: "border-amber-500 bg-amber-950/20 shadow-amber-500/10",
+        titleClass: "text-amber-400",
+        dotClass: "bg-amber-500",
+        charId: "charEjecutor",
+        auraClass: "amber-aura",
+        bubbleId: "bubbleEjecutor1",
+        bubbleAuraClass: "pixel-bubble-amber",
+        headline: "9 chequeos cuantitativos OK",
+        description: "Verifica spread bid/ask, liquidez de strikes y cálculo de Expected Move 0DTE diario.",
+        action: "0DTE STRIKE VALIDATION"
+      },
+      {
+        name: "VIGILANTE",
+        color: "emerald",
+        borderClass: "border-emerald-500 bg-emerald-950/20 shadow-emerald-500/10",
+        titleClass: "text-emerald-400",
+        dotClass: "bg-emerald-500",
+        charId: "charVigilante",
+        auraClass: "green-aura",
+        bubbleId: "bubbleVigilante",
+        bubbleAuraClass: "pixel-bubble-green",
+        headline: "Supervisión de Régimen y Reversión activa",
+        description: "Rastrea la desviación respecto al Centroide y vigila expansiones anómalas de volatilidad en VIX.",
+        action: "VOLATILITY REGIME WATCH"
+      }
+    ];
+
+    let currentAgentIndex = 0;
+    let agentCountdown = 7;
+
+    function focusAgent(idx) {
+      currentAgentIndex = idx;
+      agentCountdown = 7;
+      const agent = AGENTS[idx];
+
+      // Remove auras from all characters
+      AGENTS.forEach(a => {
+        const charEl = document.getElementById(a.charId);
+        if (charEl) charEl.classList.remove("pink-aura", "cyan-aura", "amber-aura", "green-aura");
+        const bEl = document.getElementById(a.bubbleId);
+        if (bEl) bEl.classList.remove("pixel-bubble-pink", "pixel-bubble-cyan", "pixel-bubble-amber", "pixel-bubble-green");
+      });
+
+      // Add aura to focused character
+      const targetChar = document.getElementById(agent.charId);
+      if (targetChar) targetChar.classList.add(agent.auraClass);
+      const targetBubble = document.getElementById(agent.bubbleId);
+      if (targetBubble) targetBubble.classList.add(agent.bubbleAuraClass);
+
+      // Update Inspector Card
+      const card = document.getElementById('inspectorCard');
+      const title = document.getElementById('inspectorTitle');
+      const dot = document.getElementById('inspectorDot');
+      const headline = document.getElementById('inspectorHeadline');
+      const desc = document.getElementById('inspectorDescription');
+      const action = document.getElementById('inspectorAction');
+
+      if (card) {
+        card.className = `m-3 p-3.5 rounded-xl border-2 transition-all duration-500 cursor-pointer ${agent.borderClass}`;
+      }
+      if (title) {
+        title.innerText = agent.name;
+        title.className = `pixel-font text-xs font-bold ${agent.titleClass}`;
+      }
+      if (dot) {
+        dot.className = `w-2 h-2 rounded-sm ${agent.dotClass}`;
+      }
+      if (headline) headline.innerText = agent.headline;
+      if (desc) desc.innerText = agent.description;
+
+      const now = new Date();
+      const timeStr = `${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')} ${now.toTimeString().split(' ')[0].substring(0, 5)}`;
+      if (action) action.innerText = `Última acción: ${timeStr} · ${agent.action}`;
+    }
+
+    function cycleNextAgent() {
+      const nextIdx = (currentAgentIndex + 1) % AGENTS.length;
+      focusAgent(nextIdx);
+    }
+
+    function tickAgentTimer() {
+      agentCountdown--;
+      const countEl = document.getElementById('inspectorCountdown');
+      if (countEl) countEl.innerText = agentCountdown;
+
+      if (agentCountdown <= 0) {
+        cycleNextAgent();
+      }
+    }
+
     async function fetchLiveMarketData() {
       try {
         const res = await fetch('/v1/market/summary', {
@@ -423,8 +1013,9 @@
         if (!res.ok) return;
         const d = await res.json();
 
-        // Update HUD
+        // Update HUD & Office Spot
         const spot = d.price ? `$${d.price.toFixed(2)}` : '$7,743.79';
+        const spotRaw = d.price ? d.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '7,707.73';
         const em = d.expected_move ? `±${d.expected_move.toFixed(2)}` : '±4.28';
         const lower = d.lower_bound ? d.lower_bound.toFixed(2) : '7,739.52';
         const upper = d.upper_bound ? d.upper_bound.toFixed(2) : '7,748.06';
@@ -434,6 +1025,13 @@
         const regime = d.trend_status ? d.trend_status.toUpperCase() : 'BULL EXPANSION';
         const bias = `${d.predicted_direction || 'NEUTRAL'} (${d.predicted_strength ? d.predicted_strength + '%' : '50%'})`;
 
+        // Update Office Card Header
+        const officeSpot = document.getElementById('officeSpxSpot');
+        if (officeSpot) officeSpot.innerText = spotRaw;
+        const officeSub = document.getElementById('officeSubMetrics');
+        if (officeSub) officeSub.innerText = `EM: ${lower} - ${upper} · VIX: ${vix}`;
+
+        // HUD left cards
         document.getElementById('hudSpot').innerText = spot;
         document.getElementById('hudEM').innerText = em;
         document.getElementById('hudLower').innerText = lower;
@@ -457,6 +1055,12 @@
           const pct = Math.max(5, Math.min(95, Math.round((currentPos / totalRange) * 100)));
           document.getElementById('rangeBarFill').style.width = `${pct}%`;
           document.getElementById('hudPercent').innerText = `${pct}% DEL RANGO`;
+
+          // Dynamic update to agent headline when focused on CONTADOR
+          if (currentAgentIndex === 0) {
+            const headline = document.getElementById('inspectorHeadline');
+            if (headline) headline.innerText = `Rango SPX 0DTE contenido al ${pct}%`;
+          }
         }
 
         // Marquee Text
@@ -484,8 +1088,8 @@
       "PROPHET_VIX :: Chequeando régimen de volatilidad con opciones.",
       "CORE_DISPATCH :: Nuevo tick de mercado recibido desde Supabase.",
       "ALPHA_HUB :: Enviando payload a cliente MCP activo.",
-      "AGENT_0DTE :: Banda superior a 7,748.06 detectando resistencia.",
-      "SENTINEL_GEX :: Distancia hacia objetivo de cierre: +2.16 pts."
+      "AGENT_0DTE :: Banda superior detectando resistencia de strikes.",
+      "SENTINEL_GEX :: Reversión a la media calculando distancia al Centroide."
     ];
 
     function appendRandomLog() {
@@ -512,14 +1116,13 @@
       if (!isAudioPlaying) {
         try {
           audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-          // Relaxing chord notes (Dm7: D3, F3, A3, C4)
           const freqs = [146.83, 174.61, 220.00, 261.63];
           oscillatorNodes = freqs.map(f => {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'sine';
             osc.frequency.value = f;
-            gain.gain.value = 0.02; // soft volume
+            gain.gain.value = 0.02;
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             osc.start();
@@ -549,6 +1152,9 @@
 
       fetchLiveMarketData();
       setInterval(fetchLiveMarketData, 5000);
+
+      setInterval(tickAgentTimer, 1000);
+      focusAgent(0); // Default to CONTADOR matching the reference screenshot!
 
       setInterval(appendRandomLog, 4500);
     });
