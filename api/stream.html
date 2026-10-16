@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlphaQuant | 24/7 Live Agentic Market Stream</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      background-color: #05070f;
+      color: #e2e8f0;
+      font-family: 'JetBrains Mono', monospace;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+    }
+    .pixel-font { font-family: 'Press Start 2P', monospace; }
+    
+    /* CRT Scanline Effect */
+    .crt::after {
+      content: " ";
+      display: block;
+      position: absolute;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      z-index: 50;
+      background-size: 100% 3px, 6px 100%;
+      pointer-events: none;
+    }
+
+    /* Glows & Neons */
+    .neon-text-green { text-shadow: 0 0 8px rgba(16, 185, 129, 0.7), 0 0 16px rgba(16, 185, 129, 0.4); }
+    .neon-text-cyan { text-shadow: 0 0 8px rgba(6, 182, 212, 0.7), 0 0 16px rgba(6, 182, 212, 0.4); }
+    .neon-text-amber { text-shadow: 0 0 8px rgba(245, 158, 11, 0.7), 0 0 16px rgba(245, 158, 11, 0.4); }
+    .neon-box-green { box-shadow: 0 0 15px rgba(16, 185, 129, 0.25), inset 0 0 15px rgba(16, 185, 129, 0.1); }
+    .neon-box-cyan { box-shadow: 0 0 15px rgba(6, 182, 212, 0.25), inset 0 0 15px rgba(6, 182, 212, 0.1); }
+    
+    /* Marquee ticker animation */
+    @keyframes marquee {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-50%); }
+    }
+    .animate-marquee {
+      display: flex;
+      width: 200%;
+      animation: marquee 28s linear infinite;
+    }
+
+    /* Blinking cursors and lights */
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.15; } }
+    .blink-fast { animation: blink 0.8s infinite; }
+    .blink-slow { animation: blink 1.6s infinite; }
+
+    /* Pixel art bot animations */
+    @keyframes bobbing {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+    .bot-bob { animation: bobbing 2s ease-in-out infinite; }
+    .bot-bob-delayed { animation: bobbing 2.2s ease-in-out infinite 0.7s; }
+    .bot-bob-delayed2 { animation: bobbing 1.8s ease-in-out infinite 1.2s; }
+
+    /* Sound visualizer wave */
+    @keyframes soundBar {
+      0%, 100% { height: 4px; }
+      50% { height: 18px; }
+    }
+    .bar-1 { animation: soundBar 1.2s infinite ease-in-out; }
+    .bar-2 { animation: soundBar 0.9s infinite ease-in-out 0.2s; }
+    .bar-3 { animation: soundBar 1.4s infinite ease-in-out 0.4s; }
+    .bar-4 { animation: soundBar 0.8s infinite ease-in-out 0.1s; }
+  </style>
+</head>
+<body class="crt flex flex-col justify-between p-4 md:p-6 select-none">
+
+  <!-- TOP BAR: Live Marquee Ticker -->
+  <header class="w-full bg-slate-950/90 border border-emerald-500/40 rounded-xl overflow-hidden neon-box-green flex flex-col z-20">
+    <!-- Top sub-header with clocks and status -->
+    <div class="px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs bg-slate-900/80">
+      <div class="flex items-center gap-3">
+        <span class="pixel-font text-[10px] text-emerald-400 font-bold tracking-wider flex items-center gap-2">
+          <span class="h-2 w-2 rounded-full bg-emerald-400 animate-ping"></span>
+          ALPHAQUANT // AI QUANT TERMINAL
+        </span>
+        <span class="text-slate-500">•</span>
+        <span class="text-slate-300 font-mono text-[11px]" id="marketSessionBadge">
+          <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span> NYSE SESSION
+        </span>
+      </div>
+
+      <div class="flex items-center gap-4 font-mono text-[11px]">
+        <span class="text-slate-400 flex items-center gap-1.5">
+          <i class="fa-solid fa-clock text-emerald-400"></i>
+          <span class="text-emerald-300 font-bold" id="liveNyClock">--:--:-- ET</span>
+        </span>
+        <span class="text-slate-600">|</span>
+        <span class="text-slate-400 flex items-center gap-1.5">
+          <i class="fa-solid fa-tower-broadcast text-cyan-400"></i>
+          <span class="text-cyan-300" id="livePing">LAT: 72ms</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Scrolling LED Marquee -->
+    <div class="overflow-hidden whitespace-nowrap py-2 bg-black/60 relative">
+      <div class="animate-marquee font-mono text-xs font-bold uppercase tracking-widest text-emerald-400" id="marqueeTicker">
+        <span class="mx-4 text-emerald-300">★ SPX 0DTE EXPECTED MOVE IN PROGRESS</span>
+        <span class="mx-4 text-white">SPOT: <span id="tickerSpot">--</span></span>
+        <span class="mx-4 text-amber-300">EM BANDS: <span id="tickerBands">[-- A --]</span></span>
+        <span class="mx-4 text-cyan-300">VIX REGIME: <span id="tickerVix">--</span></span>
+        <span class="mx-4 text-purple-300">CENTROIDE: <span id="tickerCentroid">--</span></span>
+        <span class="mx-4 text-emerald-400">OBJETIVO CIERRE: <span id="tickerTarget">--</span></span>
+        <span class="mx-4 text-slate-400">// PROTOCOLO MCP ACTIVO // POWERED BY ALPHAQUANT // VERIFIED AT SMITHERY.AI</span>
+        <!-- Duplicated for seamless loop -->
+        <span class="mx-4 text-emerald-300">★ SPX 0DTE EXPECTED MOVE IN PROGRESS</span>
+        <span class="mx-4 text-white">SPOT: <span id="tickerSpot2">--</span></span>
+        <span class="mx-4 text-amber-300">EM BANDS: <span id="tickerBands2">[-- A --]</span></span>
+        <span class="mx-4 text-cyan-300">VIX REGIME: <span id="tickerVix2">--</span></span>
+        <span class="mx-4 text-purple-300">CENTROIDE: <span id="tickerCentroid2">--</span></span>
+        <span class="mx-4 text-emerald-400">OBJETIVO CIERRE: <span id="tickerTarget2">--</span></span>
+        <span class="mx-4 text-slate-400">// PROTOCOLO MCP ACTIVO // POWERED BY ALPHAQUANT // VERIFIED AT SMITHERY.AI</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN STAGE: Retro Pixel Trading Floor & Holographic Telemetry -->
+  <main class="grid grid-cols-1 lg:grid-cols-12 gap-5 my-auto z-10 w-full max-w-[1800px] mx-auto items-center">
+
+    <!-- LEFT HUD: Quant Gauges & Volatility Meters -->
+    <div class="lg:col-span-3 flex flex-col gap-4">
+      
+      <!-- Card: Spot & Expected Move Range -->
+      <div class="bg-slate-950/80 p-4 rounded-xl border border-slate-800 neon-box-green backdrop-blur">
+        <div class="flex items-center justify-between text-xs text-slate-400 mb-1 border-b border-slate-800 pb-2">
+          <span class="pixel-font text-[9px] text-emerald-400">SPX 0DTE RANGE</span>
+          <span class="text-[10px] text-emerald-500/80 font-mono">MODEL v1.0</span>
+        </div>
+        <div class="flex items-baseline justify-between mt-2">
+          <span class="text-3xl font-extrabold text-white tracking-tight" id="hudSpot">$7,743.79</span>
+          <span class="text-sm font-bold text-amber-400 font-mono" id="hudEM">±4.28</span>
+        </div>
+
+        <!-- Visual Range Bar (Spot relative to Bands) -->
+        <div class="mt-3">
+          <div class="flex justify-between text-[10px] text-slate-400 font-mono mb-1">
+            <span id="hudLower">7,739.52</span>
+            <span class="text-emerald-400 font-bold" id="hudPercent">50% DEL RANGO</span>
+            <span id="hudUpper">7,748.06</span>
+          </div>
+          <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden border border-slate-800 relative">
+            <div id="rangeBarFill" class="bg-gradient-to-r from-red-500 via-emerald-400 to-amber-500 h-full w-[60%] transition-all duration-700"></div>
+            <!-- Marker -->
+            <div class="absolute top-0 bottom-0 w-1 bg-white shadow-lg shadow-white" style="left: 60%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card: Mean-Reversion Centroid & Target Close -->
+      <div class="bg-slate-950/80 p-4 rounded-xl border border-slate-800 neon-box-cyan backdrop-blur">
+        <div class="flex items-center justify-between text-xs text-slate-400 mb-1 border-b border-slate-800 pb-2">
+          <span class="pixel-font text-[9px] text-cyan-400">REVERSION LEVELS</span>
+          <i class="fa-solid fa-crosshairs text-cyan-400 text-xs"></i>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mt-2">
+          <div>
+            <span class="text-[10px] text-slate-400 uppercase">Centroide</span>
+            <p class="text-xl font-bold text-cyan-300 font-mono" id="hudCentroid">$7,729.37</p>
+            <span class="text-[10px] text-slate-500 font-mono" id="hudDev">Desv: +14.42</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-400 uppercase">Target Cierre</span>
+            <p class="text-xl font-bold text-emerald-400 font-mono" id="hudTarget">$7,745.95</p>
+            <span class="text-[10px] text-slate-500 font-mono" id="hudDist">Dist: +2.16</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card: VIX & Regime State -->
+      <div class="bg-slate-950/80 p-4 rounded-xl border border-slate-800 backdrop-blur">
+        <div class="flex items-center justify-between text-xs text-slate-400 mb-1 border-b border-slate-800 pb-2">
+          <span class="pixel-font text-[9px] text-purple-400">VIX & TREND BIAS</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30" id="hudRegimeBadge">BULL EXPANSION</span>
+        </div>
+        <div class="flex items-center justify-between mt-2">
+          <div>
+            <span class="text-[10px] text-slate-400 uppercase">Volatilidad VIX</span>
+            <p class="text-2xl font-bold text-purple-300 font-mono" id="hudVix">16.41</p>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] text-slate-400 uppercase">Dirección & Fuerza</span>
+            <p class="text-lg font-bold text-emerald-400 font-mono" id="hudBias">NEUTRAL (50.4%)</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CENTER STAGE: The Animated Pixel-Art AI Trading Station -->
+    <div class="lg:col-span-6 flex flex-col items-center justify-center relative min-h-[440px]">
+      
+      <!-- Background Server Rack with Pulsing Lights -->
+      <div class="w-full max-w-[540px] bg-slate-950 p-6 rounded-2xl border-2 border-slate-800 relative shadow-2xl overflow-hidden">
+        
+        <!-- Overhead Neon Sign -->
+        <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="h-3 w-3 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="pixel-font text-[10px] text-emerald-400 tracking-wider">ALPHAQUANT OPS STATION</span>
+          </div>
+          <span class="pixel-font text-[8px] text-slate-500">AUTONOMOUS RUNTIME</span>
+        </div>
+
+        <!-- 3 Pixel-Art Agent Workstations -->
+        <div class="grid grid-cols-3 gap-3 my-4">
+          
+          <!-- Bot 1: Volatility Agent -->
+          <div class="flex flex-col items-center bg-slate-900/90 p-3 rounded-xl border border-emerald-500/30 bot-bob">
+            <div class="text-2xl mb-1">🤖</div>
+            <span class="pixel-font text-[8px] text-emerald-300 mb-1">AGENT_0DTE</span>
+            <div class="w-full bg-black/80 p-1.5 rounded font-mono text-[9px] text-emerald-400 border border-slate-800 text-center">
+              <span class="blink-fast">●</span> RUNNING
+            </div>
+            <span class="text-[9px] text-slate-400 mt-1 font-mono">EM: ±4.28</span>
+          </div>
+
+          <!-- Bot 2: Centroid Sentinel -->
+          <div class="flex flex-col items-center bg-slate-900/90 p-3 rounded-xl border border-cyan-500/30 bot-bob-delayed">
+            <div class="text-2xl mb-1">👾</div>
+            <span class="pixel-font text-[8px] text-cyan-300 mb-1">SENTINEL_GEX</span>
+            <div class="w-full bg-black/80 p-1.5 rounded font-mono text-[9px] text-cyan-400 border border-slate-800 text-center">
+              <span class="blink-fast">●</span> LOCKED
+            </div>
+            <span class="text-[9px] text-slate-400 mt-1 font-mono">REV: $7,729</span>
+          </div>
+
+          <!-- Bot 3: Trend Dispatcher -->
+          <div class="flex flex-col items-center bg-slate-900/90 p-3 rounded-xl border border-purple-500/30 bot-bob-delayed2">
+            <div class="text-2xl mb-1">🧙‍♂️</div>
+            <span class="pixel-font text-[8px] text-purple-300 mb-1">PROPHET_VIX</span>
+            <div class="w-full bg-black/80 p-1.5 rounded font-mono text-[9px] text-purple-400 border border-slate-800 text-center">
+              <span class="blink-fast">●</span> CALIBRATING
+            </div>
+            <span class="text-[9px] text-slate-400 mt-1 font-mono">VIX: 16.4</span>
+          </div>
+
+        </div>
+
+        <!-- Terminal Console (Typing Agent Live Activity) -->
+        <div class="bg-black/95 p-3.5 rounded-xl border border-slate-800 font-mono text-xs text-emerald-400 mt-3 relative overflow-hidden">
+          <div class="flex items-center justify-between text-[10px] text-slate-500 border-b border-slate-900 pb-1 mb-2">
+            <span>TERMINAL_OUTPUT.LOG</span>
+            <span class="text-emerald-500">STREAMING</span>
+          </div>
+          <div id="liveAgentLogs" class="space-y-1 text-[11px] max-h-24 overflow-hidden">
+            <div><span class="text-slate-500">[12:40:01]</span> <span class="text-cyan-400">AGENT_0DTE</span> :: Expected Move actualizando en bandas SPX...</div>
+            <div><span class="text-slate-500">[12:40:03]</span> <span class="text-purple-400">PROPHET_VIX</span> :: VIX estable en 16.41 (Régimen Bullish).</div>
+            <div><span class="text-slate-500">[12:40:05]</span> <span class="text-emerald-400">SENTINEL_GEX</span> :: Centroide 7,729.37 alineado a cierre 7,745.95.</div>
+          </div>
+        </div>
+
+        <!-- Bottom Ambient Music & Waveform Indicator -->
+        <div class="mt-4 flex items-center justify-between pt-3 border-t border-slate-800/80 text-xs text-slate-400">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-headphones text-emerald-400"></i>
+            <span class="text-[11px] font-mono">BGM: <span class="text-slate-300">AlphaQuant Lofi Beats (Chill 24/7)</span></span>
+          </div>
+          <!-- Sound visualizer bars -->
+          <div class="flex items-end gap-1 h-5">
+            <span class="w-1 bg-emerald-400 bar-1 rounded-full"></span>
+            <span class="w-1 bg-cyan-400 bar-2 rounded-full"></span>
+            <span class="w-1 bg-amber-400 bar-3 rounded-full"></span>
+            <span class="w-1 bg-purple-400 bar-4 rounded-full"></span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- RIGHT HUD: Live Telemetry Feed & MCP Agent Requests -->
+    <div class="lg:col-span-3 flex flex-col gap-4">
+      
+      <!-- Live Agent Requests Feed -->
+      <div class="bg-slate-950/80 p-4 rounded-xl border border-slate-800 backdrop-blur neon-box-cyan">
+        <div class="flex items-center justify-between text-xs text-slate-400 mb-2 border-b border-slate-800 pb-2">
+          <span class="pixel-font text-[9px] text-cyan-400">AI AGENT FEED</span>
+          <span class="text-[10px] text-cyan-500 font-mono">EN VIVO</span>
+        </div>
+
+        <div id="streamFeedList" class="space-y-2 text-xs font-mono max-h-48 overflow-hidden">
+          <div class="p-2 bg-slate-900/60 rounded border border-slate-800 flex justify-between items-center">
+            <div>
+              <span class="text-purple-400 font-bold">CLAUDE_AI</span>
+              <p class="text-[10px] text-slate-400">/v1/market/summary</p>
+            </div>
+            <span class="text-emerald-400 text-[11px]">84ms</span>
+          </div>
+          <div class="p-2 bg-slate-900/60 rounded border border-slate-800 flex justify-between items-center">
+            <div>
+              <span class="text-cyan-400 font-bold">CURSOR_AGENT</span>
+              <p class="text-[10px] text-slate-400">/v1/market/expected-move</p>
+            </div>
+            <span class="text-emerald-400 text-[11px]">68ms</span>
+          </div>
+          <div class="p-2 bg-slate-900/60 rounded border border-slate-800 flex justify-between items-center">
+            <div>
+              <span class="text-amber-400 font-bold">QUANT_PYTHON</span>
+              <p class="text-[10px] text-slate-400">/v1/market/levels</p>
+            </div>
+            <span class="text-emerald-400 text-[11px]">71ms</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sponsor / Community Callout Box -->
+      <div class="bg-gradient-to-br from-slate-950 to-slate-900 p-4 rounded-xl border border-amber-500/30 backdrop-blur">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="pixel-font text-[9px] text-amber-400">CONNECT YOUR AGENT</span>
+        </div>
+        <p class="text-xs text-slate-300 leading-relaxed font-mono">
+          Conecta este feed directamente a tu agente de IA en Claude, Cursor o Python:
+        </p>
+        <div class="mt-3 p-2 bg-black/80 rounded border border-slate-800 text-[11px] font-mono text-emerald-400 truncate">
+          smithery.ai/servers/@homero-garza-g/alphaquant
+        </div>
+        <div class="mt-3 flex items-center justify-between text-[11px] text-slate-400">
+          <span>Free Beta Access</span>
+          <span class="text-amber-400 font-bold">end-points.vercel.app</span>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- BOTTOM BAR: Audio & Stream Status Overlay -->
+  <footer class="w-full bg-slate-950/90 border border-slate-800 px-4 py-2.5 rounded-xl flex items-center justify-between text-xs text-slate-400 z-20">
+    <div class="flex items-center gap-3">
+      <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+      <span class="pixel-font text-[8px] text-slate-300">STREAMING 1080p 60FPS</span>
+      <span class="text-slate-600">|</span>
+      <span>SPX 0DTE Volatility & Quant Reversion Intelligence</span>
+    </div>
+
+    <!-- Audio Player Controls for Viewer/OBS -->
+    <div class="flex items-center gap-3">
+      <button onclick="toggleAudio()" id="btnAudio" class="px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-white font-mono text-xs flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-volume-high text-emerald-400" id="audioIcon"></i>
+        <span id="audioText">Lofi BGM (Sonando)</span>
+      </button>
+      <span class="text-slate-500 text-[10px]">OBS BROWSER SOURCE READY</span>
+    </div>
+  </footer>
+
+  <!-- Simple Synthetic Lofi Audio Generator (Zero External Audio File Dependency) -->
+  <script>
+    let isAudioPlaying = false;
+    let audioCtx = null;
+    let oscillatorNodes = [];
+
+    function updateClocks() {
+      const now = new Date();
+      const clockEl = document.getElementById('liveNyClock');
+      if (clockEl) {
+        try {
+          const timeStr = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'America/New_York',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+          }).format(now);
+          clockEl.innerText = `${timeStr} ET`;
+        } catch (e) {
+          clockEl.innerText = now.toTimeString();
+        }
+      }
+
+      // Market Session Check
+      const badge = document.getElementById('marketSessionBadge');
+      if (badge) {
+        try {
+          const parts = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'America/New_York',
+            weekday: 'short',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: false
+          }).formatToParts(now);
+
+          let weekday = '', hour = 0, minute = 0;
+          for (const p of parts) {
+            if (p.type === 'weekday') weekday = p.value;
+            if (p.type === 'hour') hour = parseInt(p.value, 10);
+            if (p.type === 'minute') minute = parseInt(p.value, 10);
+          }
+          const isWeekend = (weekday === 'Sat' || weekday === 'Sun');
+          const totalMinutes = hour * 60 + minute;
+          const isOpen = !isWeekend && (totalMinutes >= 570 && totalMinutes < 960);
+
+          if (isOpen) {
+            badge.innerHTML = '<span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span> NYSE SESSION (OPEN)';
+            badge.className = 'text-emerald-400 font-mono text-[11px] font-bold';
+          } else {
+            badge.innerHTML = '<span class="inline-block w-2 h-2 rounded-full bg-slate-500 mr-1.5"></span> NYSE (CLOSED)';
+            badge.className = 'text-slate-400 font-mono text-[11px]';
+          }
+        } catch (e) {}
+      }
+    }
+
+    async function fetchLiveMarketData() {
+      try {
+        const res = await fetch('/v1/market/summary', {
+          headers: { 'X-Internal-Dashboard': 'true' }
+        });
+        if (!res.ok) return;
+        const d = await res.json();
+
+        // Update HUD
+        const spot = d.price ? `$${d.price.toFixed(2)}` : '$7,743.79';
+        const em = d.expected_move ? `±${d.expected_move.toFixed(2)}` : '±4.28';
+        const lower = d.lower_bound ? d.lower_bound.toFixed(2) : '7,739.52';
+        const upper = d.upper_bound ? d.upper_bound.toFixed(2) : '7,748.06';
+        const centroid = d.centroid ? `$${d.centroid.toFixed(2)}` : '$7,729.37';
+        const target = d.target_close ? `$${d.target_close.toFixed(2)}` : '$7,745.95';
+        const vix = d.vix ? d.vix.toFixed(2) : '16.41';
+        const regime = d.trend_status ? d.trend_status.toUpperCase() : 'BULL EXPANSION';
+        const bias = `${d.predicted_direction || 'NEUTRAL'} (${d.predicted_strength ? d.predicted_strength + '%' : '50%'})`;
+
+        document.getElementById('hudSpot').innerText = spot;
+        document.getElementById('hudEM').innerText = em;
+        document.getElementById('hudLower').innerText = lower;
+        document.getElementById('hudUpper').innerText = upper;
+        document.getElementById('hudCentroid').innerText = centroid;
+        document.getElementById('hudTarget').innerText = target;
+        document.getElementById('hudVix').innerText = vix;
+        document.getElementById('hudRegimeBadge').innerText = regime;
+        document.getElementById('hudBias').innerText = bias;
+
+        // Dev & Dist
+        const devVal = d.deviation_from_centroid || 14.42;
+        const distVal = d.distance_to_target || 2.16;
+        document.getElementById('hudDev').innerText = `Desv: ${devVal > 0 ? '+' : ''}${devVal}`;
+        document.getElementById('hudDist').innerText = `Dist: ${distVal > 0 ? '+' : ''}${distVal}`;
+
+        // Range bar calculation
+        if (d.price && d.lower_bound && d.upper_bound) {
+          const totalRange = d.upper_bound - d.lower_bound;
+          const currentPos = d.price - d.lower_bound;
+          const pct = Math.max(5, Math.min(95, Math.round((currentPos / totalRange) * 100)));
+          document.getElementById('rangeBarFill').style.width = `${pct}%`;
+          document.getElementById('hudPercent').innerText = `${pct}% DEL RANGO`;
+        }
+
+        // Marquee Text
+        document.getElementById('tickerSpot').innerText = spot;
+        document.getElementById('tickerBands').innerText = `[${lower} - ${upper}]`;
+        document.getElementById('tickerVix').innerText = `${vix} (${regime})`;
+        document.getElementById('tickerCentroid').innerText = centroid;
+        document.getElementById('tickerTarget').innerText = target;
+
+        document.getElementById('tickerSpot2').innerText = spot;
+        document.getElementById('tickerBands2').innerText = `[${lower} - ${upper}]`;
+        document.getElementById('tickerVix2').innerText = `${vix} (${regime})`;
+        document.getElementById('tickerCentroid2').innerText = centroid;
+        document.getElementById('tickerTarget2').innerText = target;
+
+      } catch (e) {
+        console.error('Error in live market poll:', e);
+      }
+    }
+
+    // Dynamic Terminal Logs & Agent Chatter
+    const LOG_TEMPLATES = [
+      "AGENT_0DTE :: Expected Move recalculado en bandas SPX.",
+      "SENTINEL_GEX :: Centroide cuantitativo calibrando soporte.",
+      "PROPHET_VIX :: Chequeando régimen de volatilidad con opciones.",
+      "CORE_DISPATCH :: Nuevo tick de mercado recibido desde Supabase.",
+      "ALPHA_HUB :: Enviando payload a cliente MCP activo.",
+      "AGENT_0DTE :: Banda superior a 7,748.06 detectando resistencia.",
+      "SENTINEL_GEX :: Distancia hacia objetivo de cierre: +2.16 pts."
+    ];
+
+    function appendRandomLog() {
+      const logs = document.getElementById('liveAgentLogs');
+      if (!logs) return;
+      const now = new Date();
+      const timeStr = now.toTimeString().split(' ')[0];
+      const msg = LOG_TEMPLATES[Math.floor(Math.random() * LOG_TEMPLATES.length)];
+      
+      const newDiv = document.createElement('div');
+      newDiv.innerHTML = `<span class="text-slate-500">[${timeStr}]</span> ${msg}`;
+      logs.appendChild(newDiv);
+      if (logs.children.length > 5) {
+        logs.removeChild(logs.children[0]);
+      }
+    }
+
+    // Audio generator: Soft ambient relaxing lofi drone
+    function toggleAudio() {
+      const btn = document.getElementById('btnAudio');
+      const icon = document.getElementById('audioIcon');
+      const text = document.getElementById('audioText');
+
+      if (!isAudioPlaying) {
+        try {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          // Relaxing chord notes (Dm7: D3, F3, A3, C4)
+          const freqs = [146.83, 174.61, 220.00, 261.63];
+          oscillatorNodes = freqs.map(f => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = f;
+            gain.gain.value = 0.02; // soft volume
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            return { osc, gain };
+          });
+          isAudioPlaying = true;
+          icon.className = 'fa-solid fa-volume-high text-emerald-400';
+          text.innerText = 'Lofi BGM (Sonando)';
+        } catch (e) {
+          console.error(e);
+        }
+      } else {
+        if (oscillatorNodes.length > 0) {
+          oscillatorNodes.forEach(o => o.osc.stop());
+          oscillatorNodes = [];
+        }
+        isAudioPlaying = false;
+        icon.className = 'fa-solid fa-volume-xmark text-slate-500';
+        text.innerText = 'Lofi BGM (Pausado)';
+      }
+    }
+
+    // Boot & Loop
+    window.addEventListener('DOMContentLoaded', () => {
+      updateClocks();
+      setInterval(updateClocks, 1000);
+
+      fetchLiveMarketData();
+      setInterval(fetchLiveMarketData, 5000);
+
+      setInterval(appendRandomLog, 4500);
+    });
+  </script>
+</body>
+</html>

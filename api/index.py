@@ -70,6 +70,8 @@ async def vercel_path_normalizer(request: Request, call_next):
 LLMS_TXT_PATH = Path(__file__).resolve().parent.parent / "public" / "llms.txt"
 DASHBOARD_HTML_PATH = Path(__file__).resolve().parent / "dashboard.html"
 FALLBACK_DASHBOARD_PATH = Path(__file__).resolve().parent.parent / "public" / "dashboard.html"
+STREAM_HTML_PATH = Path(__file__).resolve().parent / "stream.html"
+FALLBACK_STREAM_PATH = Path(__file__).resolve().parent.parent / "public" / "stream.html"
 
 
 def should_record_telemetry(request: Request) -> bool:
@@ -99,6 +101,16 @@ async def get_dashboard():
     elif FALLBACK_DASHBOARD_PATH.exists():
         return HTMLResponse(content=FALLBACK_DASHBOARD_PATH.read_text(encoding="utf-8"))
     return HTMLResponse(content="<h1>Dashboard file not found</h1>", status_code=404)
+
+
+@app.get("/stream", response_class=HTMLResponse, summary="Pantalla interactiva 24/7 pixel-art animada para OBS Studio y YouTube Live")
+@app.get("/api/stream", response_class=HTMLResponse, include_in_schema=False)
+async def get_stream():
+    if STREAM_HTML_PATH.exists():
+        return HTMLResponse(content=STREAM_HTML_PATH.read_text(encoding="utf-8"))
+    elif FALLBACK_STREAM_PATH.exists():
+        return HTMLResponse(content=FALLBACK_STREAM_PATH.read_text(encoding="utf-8"))
+    return HTMLResponse(content="<h1>Stream file not found</h1>", status_code=404)
 
 
 @app.get("/", summary="Ruta principal con metadatos y enlaces de descubrimiento")
