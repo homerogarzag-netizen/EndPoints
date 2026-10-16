@@ -64,41 +64,68 @@
 }
 ```
 
-### 4. Resumen Consolidado de Sesión
-- **Ruta:** `GET /v1/market/summary`
-- **Descripción:** Consolida todas las métricas en una única llamada para minimizar roundtrips y tokens.
+### 4. Niveles Institucionales de Gamma Exposure (GEX)
+- **Ruta:** `GET /v1/market/gex`
+- **Parámetros:** `?symbol=SPX` (o `QQQ`, `SPY`)
+- **Descripción:** Entrega el mapa de Gamma institucional: Call Wall (techo de resistencia), Put Wall (suelo de soporte), Zero Gamma (Gamma Flip Point donde cambia el régimen de volatilidad), Gamma Neta ($) y Put/Call Ratio.
 - **Respuesta JSON:**
 ```json
 {
   "symbol": "SPX",
-  "price": 5850.25,
-  "expected_move": 25.50,
-  "upper_bound": 5875.75,
-  "lower_bound": 5824.75,
-  "vix": 16.20,
-  "trend_status": "bullish_expansion",
-  "predicted_direction": "UP",
-  "predicted_strength": 0.82,
-  "centroid": 5842.00,
-  "target_close": 5865.00,
-  "deviation_from_centroid": 8.25,
-  "distance_to_target": 14.75,
-  "timestamp": "2026-10-15T15:30:00Z"
+  "price": 7656.47,
+  "call_wall": 7650.00,
+  "put_wall": 7640.00,
+  "zero_gamma": 7645.00,
+  "net_gex": -48766787732.01,
+  "net_vanna": -777896.79,
+  "put_call_ratio_vol": 1.210,
+  "put_call_ratio_oi": 1.502,
+  "vix": 20.09,
+  "timestamp": "2026-10-16T15:55:00-04:00"
 }
 ```
 
-### 5. Buzón de Sugerencias y Solicitud de Tickers
+### 5. Resumen Consolidado de Sesión
+- **Ruta:** `GET /v1/market/summary`
+- **Parámetros:** `?symbol=SPX` (o `QQQ`, `SPY`)
+- **Descripción:** Consolida todas las métricas cuantitativas, Expected Move, VIX y niveles GEX en una única llamada para minimizar roundtrips y tokens.
+- **Respuesta JSON:**
+```json
+{
+  "symbol": "SPX",
+  "price": 7656.47,
+  "expected_move": 5.65,
+  "upper_bound": 7662.12,
+  "lower_bound": 7650.82,
+  "vix": 20.09,
+  "trend_status": "BEAR",
+  "predicted_direction": "NEUTRAL",
+  "predicted_strength": 50.4,
+  "centroid": 7638.35,
+  "target_close": 7656.56,
+  "deviation_from_centroid": 18.12,
+  "distance_to_target": 0.09,
+  "call_wall": 7650.00,
+  "put_wall": 7640.00,
+  "zero_gamma": 7645.00,
+  "net_gex": -48766787732.01,
+  "put_call_ratio_vol": 1.210,
+  "timestamp": "2026-10-16T15:55:00-04:00"
+}
+```
+
+### 6. Buzón de Sugerencias y Solicitud de Tickers
 - **Ruta:** `POST /v1/feedback`
-- **Descripción:** Permite a agentes autónomos y desarrolladores enviar votos de demanda para nuevos activos (ej. QQQ, SPY, NVDA, IWM, BTC) o solicitar nuevas métricas algorítmicas.
+- **Descripción:** Permite a agentes autónomos y desarrolladores enviar votos de demanda para nuevos activos (ej. NVDA, IWM, TSLA, BTC) o solicitar nuevas métricas algorítmicas.
 - **Payload JSON:**
 ```json
 {
   "category": "ticker_request",
-  "ticker": "QQQ",
-  "comment": "Solicitud de cobertura para QQQ en 0DTE"
+  "ticker": "NVDA",
+  "comment": "Solicitud de cobertura para NVDA en 0DTE"
 }
 ```
-- **Sondeo Automático:** Todos los endpoints soportan el parámetro `?symbol=...`. Si consultas un ticker no soportado aún, la API registra automáticamente tu solicitud como un voto de demanda para priorizarlo en el roadmap.
+- **Sondeo Automático:** Todos los endpoints soportan el parámetro `?symbol=...` con cobertura activa para **SPX**, **QQQ** y **SPY**. Si consultas un ticker no soportado aún, la API registra automáticamente tu solicitud como un voto de demanda para priorizarlo en el roadmap.
 
 ---
 

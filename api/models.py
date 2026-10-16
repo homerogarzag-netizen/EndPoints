@@ -26,8 +26,21 @@ class LevelsResponse(BaseModel):
     distance_to_target: float = Field(..., description="Distancia restante al precio objetivo (target_close - precio)")
     timestamp: str = Field(..., description="Marca temporal oficial del mercado de Nueva York (America/New_York / ET, ISO-8601 con offset)")
 
+class GexResponse(BaseModel):
+    symbol: str = Field(..., description="Ticker subyacente (ej. SPX, QQQ, SPY)")
+    price: float = Field(..., description="Último precio spot registrado")
+    call_wall: Optional[float] = Field(None, description="Strike con mayor concentración de Gamma positiva (resistencia institucional)")
+    put_wall: Optional[float] = Field(None, description="Strike con mayor concentración de Gamma negativa (soporte institucional)")
+    zero_gamma: Optional[float] = Field(None, description="Nivel de Gamma Flip (punto de cambio de régimen de volatilidad)")
+    net_gex: Optional[float] = Field(None, description="Gamma neta institucional en dólares ($)")
+    net_vanna: Optional[float] = Field(None, description="Vanna neta institucional")
+    put_call_ratio_vol: Optional[float] = Field(None, description="Put/Call ratio por volumen de opciones")
+    put_call_ratio_oi: Optional[float] = Field(None, description="Put/Call ratio por Open Interest")
+    vix: Optional[float] = Field(None, description="Nivel del índice de volatilidad VIX")
+    timestamp: str = Field(..., description="Marca temporal oficial del mercado de Nueva York (America/New_York / ET, ISO-8601 con offset)")
+
 class MarketSummaryResponse(BaseModel):
-    symbol: str = Field(..., description="Ticker subyacente (ej. SPX)")
+    symbol: str = Field(..., description="Ticker subyacente (ej. SPX, QQQ, SPY)")
     price: float = Field(..., description="Último precio spot registrado")
     expected_move: float = Field(..., description="Recorrido esperado")
     upper_bound: float = Field(..., description="Límite superior esperado")
@@ -36,10 +49,15 @@ class MarketSummaryResponse(BaseModel):
     trend_status: str = Field(..., description="Régimen o estado de tendencia")
     predicted_direction: str = Field(..., description="Dirección estimada")
     predicted_strength: float = Field(..., description="Fuerza estimada (0.0 - 1.0)")
-    centroid: float = Field(..., description="Centroide")
-    target_close: float = Field(..., description="Precio de cierre proyectado")
-    deviation_from_centroid: float = Field(..., description="Desviación respecto al centroide")
-    distance_to_target: float = Field(..., description="Distancia hacia el objetivo de cierre")
+    centroid: Optional[float] = Field(None, description="Centroide")
+    target_close: Optional[float] = Field(None, description="Precio de cierre proyectado")
+    deviation_from_centroid: Optional[float] = Field(None, description="Desviación respecto al centroide")
+    distance_to_target: Optional[float] = Field(None, description="Distancia hacia el objetivo de cierre")
+    call_wall: Optional[float] = Field(None, description="Strike de resistencia por Gamma (Call Wall)")
+    put_wall: Optional[float] = Field(None, description="Strike de soporte por Gamma (Put Wall)")
+    zero_gamma: Optional[float] = Field(None, description="Nivel de Gamma Flip")
+    net_gex: Optional[float] = Field(None, description="Gamma neta institucional en dólares ($)")
+    put_call_ratio_vol: Optional[float] = Field(None, description="Put/Call Ratio por volumen")
     timestamp: str = Field(..., description="Marca temporal oficial del mercado de Nueva York (America/New_York / ET, ISO-8601 con offset)")
 
 class HealthResponse(BaseModel):
@@ -62,7 +80,7 @@ class FeedbackResponse(BaseModel):
 class UnsupportedSymbolResponse(BaseModel):
     status: str = Field(default="symbol_in_roadmap", description="Estado de disponibilidad del activo")
     requested_symbol: str = Field(..., description="Símbolo solicitado")
-    supported_symbols: list = Field(default=["SPX"], description="Activos actualmente con cobertura activa")
+    supported_symbols: list = Field(default=["SPX", "QQQ", "SPY"], description="Activos actualmente con cobertura activa")
     message: str = Field(..., description="Mensaje explicativo con registro automático de voto")
     vote_recorded: bool = Field(default=True, description="Indica si la solicitud fue registrada como voto de demanda")
     timestamp: str = Field(..., description="Marca temporal de la solicitud (Hora NY)")

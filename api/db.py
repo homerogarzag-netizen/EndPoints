@@ -38,68 +38,121 @@ MOCK_MARKET_DATA = {
     "created_at": datetime.now(ZoneInfo("America/New_York")).isoformat()
 }
 
-async def get_latest_market_data() -> Dict[str, Any]:
+async def get_latest_market_data(symbol: str = "SPX") -> Dict[str, Any]:
     """
-    Obtiene el registro más reciente de la tabla 'market_logs' en Supabase.
+    Obtiene el registro más reciente de la tabla 'market_master' en Supabase para el símbolo especificado.
     Si Supabase no está configurado o falla temporalmente, devuelve datos de respaldo.
     """
     if not SUPABASE_URL or not SUPABASE_KEY:
         if DEBUG:
             logger.info("Supabase no configurado, utilizando datos mock para desarrollo.")
-        return MOCK_MARKET_DATA.copy()
+        mock = MOCK_MARKET_DATA.copy()
+        mock["symbol"] = symbol.upper()
+        return mock
 
-    url = f"{SUPABASE_URL}/rest/v1/market_logs"
-    params = {
-        "select": "*",
-        "order": "created_at.desc",
-        "limit": 1
-    }
+    clean_sym = (symbol or "SPX").strip().upper()
     headers = {
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}",
         "Accept": "application/json"
     }
 
+    # 1. Intentar consultar la tabla maestra 'market_master'
     try:
+        url_master = f"{SUPABASE_URL}/rest/v1/market_master"
+        params_master = {
+            "select": "*",
+            "symbol": f"eq.{clean_sym}",
+            "order": "timestamp.desc",
+            "limit": 1
+        }
         async with httpx.AsyncClient(timeout=3.0) as client:
-            resp = await client.get(url, params=params, headers=headers)
+            resp = await client.get(url_master, params=params_master, headers=headers)
             if resp.status_code == 200:
                 data = resp.json()
                 if data and isinstance(data, list) and len(data) > 0:
                     row = data[0]
-                    raw_ts = row.get("created_at")
+                    raw_ts = row.get("timestamp")
                     ny_ts = to_ny_iso_timestamp(raw_ts)
                     return {
-                        "symbol": row.get("symbol", "SPX"),
-                        "price": float(row.get("price", 0.0)),
+                        "symbol": row.get("symbol", clean_sym),
+                        "price": float(row.get("spot_price", 0.0)),
                         "expected_move": float(row.get("expected_move", 0.0)),
+                        "upper_bound": float(row.get("upper_band", 0.0)),
+                        "lower_bound": float(row.get("lower_band", 0.0)),
                         "vix": float(row.get("vix", 0.0)),
                         "trend_status": str(row.get("trend_status", "neutral")),
-                        "centroid": float(row.get("centroid", 0.0)),
-                        "target_close": float(row.get("target_close", 0.0)),
-                        "predicted_direction": str(row.get("predicted_direction", "SIDEWAYS")),
-                        "predicted_strength": float(row.get("predicted_strength", 0.0)),
+                        "centroid": float(row.get("centroid", 0.0)) if row.get("centroid") is not None else float(row.get("spot_price", 0.0)),
+                        "target_close": float(row.get("target_close", 0.0)) if row.get("target_close") is not None else float(row.get("spot_price", 0.0)),
+                        "predicted_direction": str(row.get("predicted_direction", "NEUTRAL")),
+                        "predicted_strength": float(row.get("predicted_strength", 50.0)),
+                        "call_wall": float(row.get("call_wall", 0.0)) if row.get("call_wall") is not None else None,
+                        "put_wall": float(row.get("put_wall", 0.0)) if row.get("put_wall") is not None else None,
+                        "zero_gamma": float(row.get("zero_gamma", 0.0)) if row.get("zero_gamma") is not None else None,
+                        "net_gex": float(row.get("net_gex", 0.0)) if row.get("net_gex") is not None else None,
+                        "net_vanna": float(row.get("net_vanna", 0.0)) if row.get("net_vanna") is not None else None,
+                        "put_call_ratio_vol": float(row.get("put_call_ratio_vol", 0.0)) if row.get("put_call_ratio_vol") is not None else None,
+                        "put_call_ratio_oi": float(row.get("put_call_ratio_oi", 0.0)) if row.get("put_call_ratio_oi") is not None else None,
                         "created_at": ny_ts
                     }
-                else:
-                    if DEBUG:
-                        logger.warning("market_logs está vacía. Retornando datos mock.")
-                    return MOCK_MARKET_DATA.copy()
-            else:
-                if DEBUG:
-                    logger.error(f"Error consultando market_logs: {resp.status_code} - {resp.text}")
-                return MOCK_MARKET_DATA.copy()
     except Exception as exc:
         if DEBUG:
-            logger.error(f"Excepción al conectar con Supabase: {exc}")
-        return MOCK_MARKET_DATA.copy()
+            logger.error(f"Excepción al conectar con market_master: {exc}")
+
+    # 2. Fallback a 'market_logs' si clean_sym es SPX
+    if clean_sym == "SPX":
+        try:
+            url_logs = f"{SUPABASE_URL}/rest/v1/market_logs"
+            params_logs = {
+                "select": "*",
+                "order": "created_at.desc",
+                "limit": 1
+            }
+            async with httpx.AsyncClient(timeout=3.0) as client:
+                resp = await client.get(url_logs, params=params_logs, headers=headers)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    if data and isinstance(data, list) and len(data) > 0:
+                        row = data[0]
+                        raw_ts = row.get("created_at")
+                        ny_ts = to_ny_iso_timestamp(raw_ts)
+                        price = float(row.get("price", 0.0))
+                        em = float(row.get("expected_move", 0.0))
+                        return {
+                            "symbol": "SPX",
+                            "price": price,
+                            "expected_move": em,
+                            "upper_bound": round(price + em, 2),
+                            "lower_bound": round(price - em, 2),
+                            "vix": float(row.get("vix", 0.0)),
+                            "trend_status": str(row.get("trend_status", "neutral")),
+                            "centroid": float(row.get("centroid", 0.0)),
+                            "target_close": float(row.get("target_close", 0.0)),
+                            "predicted_direction": str(row.get("predicted_direction", "SIDEWAYS")),
+                            "predicted_strength": float(row.get("predicted_strength", 0.0)),
+                            "call_wall": None,
+                            "put_wall": None,
+                            "zero_gamma": None,
+                            "net_gex": None,
+                            "net_vanna": None,
+                            "put_call_ratio_vol": None,
+                            "put_call_ratio_oi": None,
+                            "created_at": ny_ts
+                        }
+        except Exception as exc:
+            if DEBUG:
+                logger.error(f"Excepción al conectar con market_logs: {exc}")
+
+    mock = MOCK_MARKET_DATA.copy()
+    mock["symbol"] = clean_sym
+    return mock
 
 async def check_database_health() -> bool:
     """Verifica si las credenciales de Supabase están configuradas y responden."""
     if not SUPABASE_URL or not SUPABASE_KEY:
         return False
     try:
-        url = f"{SUPABASE_URL}/rest/v1/market_logs"
+        url = f"{SUPABASE_URL}/rest/v1/market_master"
         params = {"select": "id", "limit": 1}
         headers = {
             "apikey": SUPABASE_KEY,

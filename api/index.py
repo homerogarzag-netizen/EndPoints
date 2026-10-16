@@ -12,6 +12,7 @@ from api.models import (
     RegimeResponse,
     LevelsResponse,
     MarketSummaryResponse,
+    GexResponse,
     HealthResponse,
     FeedbackRequest,
     FeedbackResponse,
@@ -90,6 +91,10 @@ def check_symbol_supported(symbol: Optional[str]) -> tuple[bool, str]:
     clean = symbol.strip().upper()
     if clean in ["SPX", "^GSPC", "SP500"]:
         return True, "SPX"
+    if clean in ["QQQ", "^NDX", "NDX"]:
+        return True, "QQQ"
+    if clean in ["SPY"]:
+        return True, "SPY"
     return False, clean
 
 
@@ -145,6 +150,7 @@ async def root(request: Request, background_tasks: BackgroundTasks):
             "/v1/market/expected-move",
             "/v1/market/regime",
             "/v1/market/levels",
+            "/v1/market/gex",
             "/v1/market/summary",
             "/v1/telemetry/stats",
             "/v1/feedback"
@@ -240,19 +246,19 @@ async def get_expected_move(request: Request, background_tasks: BackgroundTasks,
             status_code=200,
             content=UnsupportedSymbolResponse(
                 requested_symbol=requested_sym,
-                message=f"Actualmente en Beta pública para SPX. Tu consulta para '{requested_sym}' ha sido registrada automáticamente como voto de demanda para acelerar su cobertura.",
+                message=f"Actualmente con soporte activo para SPX, QQQ y SPY. Tu consulta para '{requested_sym}' ha sido registrada automáticamente como voto de demanda.",
                 timestamp=to_ny_iso_timestamp(None)
             ).model_dump()
         )
 
-    data = await get_latest_market_data()
+    data = await get_latest_market_data(requested_sym)
     price = data["price"]
     em = data["expected_move"]
-    upper = round(price + em, 2)
-    lower = round(price - em, 2)
+    upper = data.get("upper_bound", round(price + em, 2))
+    lower = data.get("lower_bound", round(price - em, 2))
 
     return ExpectedMoveResponse(
-        symbol=data.get("symbol", "SPX"),
+        symbol=data.get("symbol", requested_sym),
         price=price,
         expected_move=em,
         upper_bound=upper,
@@ -299,15 +305,15 @@ async def get_regime(request: Request, background_tasks: BackgroundTasks, symbol
             status_code=200,
             content=UnsupportedSymbolResponse(
                 requested_symbol=requested_sym,
-                message=f"Actualmente en Beta pública para SPX. Tu consulta para '{requested_sym}' ha sido registrada automáticamente como voto de demanda para acelerar su cobertura.",
+                message=f"Actualmente con soporte activo para SPX, QQQ y SPY. Tu consulta para '{requested_sym}' ha sido registrada automáticamente como voto de demanda.",
                 timestamp=to_ny_iso_timestamp(None)
             ).model_dump()
         )
 
-    data = await get_latest_market_data()
+    data = await get_latest_market_data(requested_sym)
 
     return RegimeResponse(
-        symbol=data.get("symbol", "SPX"),
+        symbol=data.get("symbol", requested_sym),
         vix=data["vix"],
         trend_status=data["trend_status"],
         predicted_direction=data["predicted_direction"],
@@ -354,12 +360,12 @@ async def get_levels(request: Request, background_tasks: BackgroundTasks, symbol
             status_code=200,
             content=UnsupportedSymbolResponse(
                 requested_symbol=requested_sym,
-                message=f"Actualmente en Beta pública para SPX. Tu consulta para '{requested_sym}' ha sido registrada automáticamente como voto de demanda para acelerar su cobertura.",
+                message=f"Actualmente con soporte activo para SPX, QQQ y SPY. Tu consulta para '{requested_sym}' ha sido registrada automáticamente como voto de demanda.",
                 timestamp=to_ny_iso_timestamp(None)
             ).model_dump()
         )
 
-    data = await get_latest_market_data()
+    data = await get_latest_market_data(requested_sym)
     price = data["price"]
     centroid = data["centroid"]
     target_close = data["target_close"]
@@ -367,12 +373,71 @@ async def get_levels(request: Request, background_tasks: BackgroundTasks, symbol
     dist_target = round(target_close - price, 2)
 
     return LevelsResponse(
-        symbol=data.get("symbol", "SPX"),
+        symbol=data.get("symbol", requested_sym),
         price=price,
         centroid=centroid,
         target_close=target_close,
         deviation_from_centroid=deviation,
         distance_to_target=dist_target,
+        timestamp=data.get("created_at")
+    )
+
+
+@app.get(
+    "/v1/market/gex",
+    response_model=GexResponse,
+    summary="Niveles clave de Gamma Exposure (GEX), Call/Put Walls y Gamma Flip"
+)
+@app.get("/api/v1/market/gex", response_model=GexResponse, include_in_schema=False)
+async def get_gex(request: Request, background_tasks: BackgroundTasks, symbol: Optional[str] = None):
+    start = time.perf_counter()
+    is_supported, requested_sym = check_symbol_supported(symbol)
+    duration_ms = (time.perf_counter() - start) * 1000
+
+    if should_record_telemetry(request):
+        background_tasks.add_task(
+            record_telemetry,
+            endpoint="/v1/market/gex",
+            method="GET",
+            user_agent=request.headers.get("user-agent", ""),
+            query_params=dict(request.query_params),
+            client_ip=request.client.host if request.client else None,
+            response_time_ms=duration_ms,
+            status_code=200,
+            headers=dict(request.headers)
+        )
+
+    if not is_supported:
+        background_tasks.add_task(
+            record_feedback,
+            category="ticker_request",
+            ticker=requested_sym,
+            comment=f"Sondeo de demanda: consulta recibida para '{requested_sym}' en /v1/market/gex",
+            contact_email=None,
+            user_agent=request.headers.get("user-agent", ""),
+            client_ip=request.client.host if request.client else None
+        )
+        return JSONResponse(
+            status_code=200,
+            content=UnsupportedSymbolResponse(
+                requested_symbol=requested_sym,
+                message=f"Actualmente con soporte activo para SPX, QQQ y SPY. Tu consulta para '{requested_sym}' ha sido registrada automáticamente como voto de demanda.",
+                timestamp=to_ny_iso_timestamp(None)
+            ).model_dump()
+        )
+
+    data = await get_latest_market_data(requested_sym)
+    return GexResponse(
+        symbol=data.get("symbol", requested_sym),
+        price=data["price"],
+        call_wall=data.get("call_wall"),
+        put_wall=data.get("put_wall"),
+        zero_gamma=data.get("zero_gamma"),
+        net_gex=data.get("net_gex"),
+        net_vanna=data.get("net_vanna"),
+        put_call_ratio_vol=data.get("put_call_ratio_vol"),
+        put_call_ratio_oi=data.get("put_call_ratio_oi"),
+        vix=data.get("vix"),
         timestamp=data.get("created_at")
     )
 
@@ -415,31 +480,38 @@ async def get_summary(request: Request, background_tasks: BackgroundTasks, symbo
             status_code=200,
             content=UnsupportedSymbolResponse(
                 requested_symbol=requested_sym,
-                message=f"Actualmente en Beta pública para SPX. Tu consulta para '{requested_sym}' ha sido registrada automáticamente como voto de demanda para acelerar su cobertura.",
+                message=f"Actualmente con soporte activo para SPX, QQQ y SPY. Tu consulta para '{requested_sym}' ha sido registrada automáticamente como voto de demanda.",
                 timestamp=to_ny_iso_timestamp(None)
             ).model_dump()
         )
 
-    data = await get_latest_market_data()
+    data = await get_latest_market_data(requested_sym)
     price = data["price"]
     em = data["expected_move"]
-    centroid = data["centroid"]
-    target_close = data["target_close"]
+    centroid = data.get("centroid")
+    target_close = data.get("target_close")
+    dev = round(price - centroid, 2) if centroid is not None else None
+    dist = round(target_close - price, 2) if target_close is not None else None
 
     return MarketSummaryResponse(
-        symbol=data.get("symbol", "SPX"),
+        symbol=data.get("symbol", requested_sym),
         price=price,
         expected_move=em,
-        upper_bound=round(price + em, 2),
-        lower_bound=round(price - em, 2),
+        upper_bound=data.get("upper_bound", round(price + em, 2)),
+        lower_bound=data.get("lower_bound", round(price - em, 2)),
         vix=data["vix"],
         trend_status=data["trend_status"],
         predicted_direction=data["predicted_direction"],
         predicted_strength=data["predicted_strength"],
         centroid=centroid,
         target_close=target_close,
-        deviation_from_centroid=round(price - centroid, 2),
-        distance_to_target=round(target_close - price, 2),
+        deviation_from_centroid=dev,
+        distance_to_target=dist,
+        call_wall=data.get("call_wall"),
+        put_wall=data.get("put_wall"),
+        zero_gamma=data.get("zero_gamma"),
+        net_gex=data.get("net_gex"),
+        put_call_ratio_vol=data.get("put_call_ratio_vol"),
         timestamp=data.get("created_at")
     )
 
@@ -495,43 +567,77 @@ async def get_feedback():
 MCP_TOOLS_METADATA = [
     {
         "name": "get_market_summary",
-        "description": "Obtiene el resumen cuantitativo completo de SPX en un solo payload: precio spot, Expected Move (0DTE), bandas de volatilidad, VIX, tendencia, centroide y precio objetivo de cierre.",
+        "description": "Obtiene el resumen cuantitativo completo en un solo payload: precio spot, Expected Move (0DTE), bandas de volatilidad, VIX, tendencia, GEX (Call/Put Walls, Gamma Flip) y precio objetivo de cierre para SPX, QQQ o SPY.",
         "inputSchema": {
             "type": "object",
-            "properties": {},
+            "properties": {
+                "symbol": {
+                    "type": "string",
+                    "description": "Ticker subyacente (SPX, QQQ, SPY). Por defecto SPX."
+                }
+            },
+            "additionalProperties": False
+        }
+    },
+    {
+        "name": "get_gex_levels",
+        "description": "Obtiene los niveles institucionales de Gamma Exposure (GEX): Call Wall (resistencia), Put Wall (soporte), Zero Gamma (Gamma Flip Point), Gamma Neta ($) y Put/Call Ratio para SPX, QQQ o SPY.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "symbol": {
+                    "type": "string",
+                    "description": "Ticker subyacente (SPX, QQQ, SPY). Por defecto SPX."
+                }
+            },
             "additionalProperties": False
         }
     },
     {
         "name": "get_expected_move",
-        "description": "Obtiene el rango de volatilidad y recorrido esperado para la sesión (0DTE/SPX), incluyendo el límite superior (upper_bound) y límite inferior (lower_bound).",
+        "description": "Obtiene el rango de volatilidad y recorrido esperado para la sesión (0DTE), incluyendo el límite superior (upper_bound) y límite inferior (lower_bound) para SPX, QQQ o SPY.",
         "inputSchema": {
             "type": "object",
-            "properties": {},
+            "properties": {
+                "symbol": {
+                    "type": "string",
+                    "description": "Ticker subyacente (SPX, QQQ, SPY). Por defecto SPX."
+                }
+            },
             "additionalProperties": False
         }
     },
     {
         "name": "get_market_regime",
-        "description": "Obtiene el nivel de VIX, régimen de tendencia actual y sesgo direccional pronosticado con porcentaje de confianza.",
+        "description": "Obtiene el nivel de VIX, régimen de tendencia actual y sesgo direccional pronosticado con porcentaje de confianza para SPX, QQQ o SPY.",
         "inputSchema": {
             "type": "object",
-            "properties": {},
+            "properties": {
+                "symbol": {
+                    "type": "string",
+                    "description": "Ticker subyacente (SPX, QQQ, SPY). Por defecto SPX."
+                }
+            },
             "additionalProperties": False
         }
     },
     {
         "name": "get_reversion_levels",
-        "description": "Obtiene los niveles cuantitativos de reversión a la media: centroide de equilibrio, precio objetivo de cierre (target_close) y desviaciones.",
+        "description": "Obtiene los niveles cuantitativos de reversión a la media: centroide de equilibrio, precio objetivo de cierre (target_close) y desviaciones (disponible para SPX).",
         "inputSchema": {
             "type": "object",
-            "properties": {},
+            "properties": {
+                "symbol": {
+                    "type": "string",
+                    "description": "Ticker subyacente (SPX, QQQ, SPY). Por defecto SPX."
+                }
+            },
             "additionalProperties": False
         }
     },
     {
         "name": "submit_feedback_or_request",
-        "description": "Envía una sugerencia o solicitud de un nuevo ticker financiero (ej. QQQ, SPY, NVDA, IWM) o nueva métrica al equipo cuantitativo de AlphaQuant.",
+        "description": "Envía una sugerencia o solicitud de un nuevo ticker financiero (ej. NVDA, IWM, TSLA) o nueva métrica al equipo cuantitativo de AlphaQuant.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -542,7 +648,7 @@ MCP_TOOLS_METADATA = [
                 },
                 "ticker": {
                     "type": "string",
-                    "description": "Símbolo o ticker solicitado (ej. QQQ, SPY, NVDA, IWM)."
+                    "description": "Símbolo o ticker solicitado (ej. NVDA, IWM, TSLA)."
                 },
                 "comment": {
                     "type": "string",
@@ -611,11 +717,12 @@ async def mcp_streamable_endpoint(request: Request, background_tasks: Background
                 "serverInfo": {
                     "name": "AlphaQuant-MCP",
                     "version": "1.0.0",
-                    "description": "Real-time quantitative options analytics, SPX 0DTE Expected Move, VIX volatility regimes, and mean-reversion levels for autonomous trading agents."
+                    "description": "Real-time quantitative options analytics, GEX, Expected Move, VIX volatility regimes, and mean-reversion levels for autonomous trading agents."
                 },
                 "instructions": (
-                    "AlphaQuant provides real-time quantitative options metrics for SPX. "
-                    "Use get_market_summary for a consolidated snapshot, get_expected_move for intraday/0DTE volatility boundaries, "
+                    "AlphaQuant provides real-time quantitative options metrics for SPX, QQQ, and SPY. "
+                    "Use get_market_summary for a consolidated snapshot, get_gex_levels for institutional Gamma Exposure and Call/Put walls, "
+                    "get_expected_move for intraday/0DTE volatility boundaries, "
                     "get_market_regime for trend and direction confidence, and get_reversion_levels for centroid and close targets. "
                     "All data is for research and computational purposes."
                 )
@@ -647,21 +754,25 @@ async def mcp_streamable_endpoint(request: Request, background_tasks: Background
             "result": {
                 "prompts": [
                     {
-                        "name": "analyze_spx_market_conditions",
-                        "description": "Analiza el estado cuantitativo actual del mercado SPX (Expected Move, VIX, sesgo y reversión).",
-                        "arguments": []
+                        "name": "analyze_market_conditions",
+                        "description": "Analiza el estado cuantitativo actual del mercado (Expected Move, GEX, VIX, sesgo y reversión).",
+                        "arguments": [
+                            {"name": "symbol", "description": "Ticker (SPX, QQQ, SPY)", "required": False}
+                        ]
                     },
                     {
                         "name": "check_0dte_expected_move",
                         "description": "Evalúa el rango esperado 0DTE y bandas superior e inferior para la sesión.",
-                        "arguments": []
+                        "arguments": [
+                            {"name": "symbol", "description": "Ticker (SPX, QQQ, SPY)", "required": False}
+                        ]
                     }
                 ]
             }
         }
 
     elif method == "prompts/get":
-        prompt_name = params.get("name", "analyze_spx_market_conditions")
+        prompt_name = params.get("name", "analyze_market_conditions")
         return {
             "jsonrpc": "2.0",
             "id": req_id,
@@ -672,7 +783,7 @@ async def mcp_streamable_endpoint(request: Request, background_tasks: Background
                         "role": "user",
                         "content": {
                             "type": "text",
-                            "text": f"Ejecuta el análisis de {prompt_name} llamando a la herramienta get_market_summary y entrega un reporte cuantitativo conciso."
+                            "text": f"Ejecuta el análisis de {prompt_name} llamando a la herramienta get_market_summary o get_gex_levels y entrega un reporte cuantitativo conciso."
                         }
                     }
                 ]
@@ -684,41 +795,67 @@ async def mcp_streamable_endpoint(request: Request, background_tasks: Background
 
     elif method == "tools/call":
         tool_name = params.get("name")
-        data = await get_latest_market_data()
+        tool_args = params.get("arguments", {}) if "arguments" in params else params
+        req_sym = tool_args.get("symbol", "SPX")
+        is_ok, target_sym = check_symbol_supported(req_sym)
+        if not is_ok:
+            target_sym = "SPX"
+        data = await get_latest_market_data(target_sym)
 
         if tool_name == "get_market_summary":
             price = data["price"]
             em = data["expected_move"]
+            centroid = data.get("centroid")
+            target_close = data.get("target_close")
             res = {
-                "symbol": data.get("symbol", "SPX"),
+                "symbol": data.get("symbol", target_sym),
                 "price": price,
                 "expected_move": em,
-                "upper_bound": round(price + em, 2),
-                "lower_bound": round(price - em, 2),
+                "upper_bound": data.get("upper_bound", round(price + em, 2)),
+                "lower_bound": data.get("lower_bound", round(price - em, 2)),
                 "vix": data["vix"],
                 "trend_status": data["trend_status"],
                 "predicted_direction": data["predicted_direction"],
                 "predicted_strength": data["predicted_strength"],
-                "centroid": data["centroid"],
-                "target_close": data["target_close"],
-                "deviation_from_centroid": round(price - data["centroid"], 2),
-                "distance_to_target": round(data["target_close"] - price, 2),
+                "centroid": centroid,
+                "target_close": target_close,
+                "deviation_from_centroid": round(price - centroid, 2) if centroid is not None else None,
+                "distance_to_target": round(target_close - price, 2) if target_close is not None else None,
+                "call_wall": data.get("call_wall"),
+                "put_wall": data.get("put_wall"),
+                "zero_gamma": data.get("zero_gamma"),
+                "net_gex": data.get("net_gex"),
+                "put_call_ratio_vol": data.get("put_call_ratio_vol"),
+                "timestamp": data.get("created_at")
+            }
+        elif tool_name == "get_gex_levels":
+            res = {
+                "symbol": data.get("symbol", target_sym),
+                "price": data["price"],
+                "call_wall": data.get("call_wall"),
+                "put_wall": data.get("put_wall"),
+                "zero_gamma": data.get("zero_gamma"),
+                "net_gex": data.get("net_gex"),
+                "net_vanna": data.get("net_vanna"),
+                "put_call_ratio_vol": data.get("put_call_ratio_vol"),
+                "put_call_ratio_oi": data.get("put_call_ratio_oi"),
+                "vix": data.get("vix"),
                 "timestamp": data.get("created_at")
             }
         elif tool_name == "get_expected_move":
             price = data["price"]
             em = data["expected_move"]
             res = {
-                "symbol": data.get("symbol", "SPX"),
+                "symbol": data.get("symbol", target_sym),
                 "price": price,
                 "expected_move": em,
-                "upper_bound": round(price + em, 2),
-                "lower_bound": round(price - em, 2),
+                "upper_bound": data.get("upper_bound", round(price + em, 2)),
+                "lower_bound": data.get("lower_bound", round(price - em, 2)),
                 "timestamp": data.get("created_at")
             }
         elif tool_name == "get_market_regime":
             res = {
-                "symbol": data.get("symbol", "SPX"),
+                "symbol": data.get("symbol", target_sym),
                 "vix": data["vix"],
                 "trend_status": data["trend_status"],
                 "predicted_direction": data["predicted_direction"],
@@ -727,13 +864,15 @@ async def mcp_streamable_endpoint(request: Request, background_tasks: Background
             }
         elif tool_name == "get_reversion_levels":
             price = data["price"]
+            centroid = data.get("centroid", price)
+            target_close = data.get("target_close", price)
             res = {
-                "symbol": data.get("symbol", "SPX"),
+                "symbol": data.get("symbol", target_sym),
                 "price": price,
-                "centroid": data["centroid"],
-                "target_close": data["target_close"],
-                "deviation_from_centroid": round(price - data["centroid"], 2),
-                "distance_to_target": round(data["target_close"] - price, 2),
+                "centroid": centroid,
+                "target_close": target_close,
+                "deviation_from_centroid": round(price - centroid, 2) if centroid is not None else None,
+                "distance_to_target": round(target_close - price, 2) if target_close is not None else None,
                 "timestamp": data.get("created_at")
             }
         elif tool_name == "submit_feedback_or_request":
