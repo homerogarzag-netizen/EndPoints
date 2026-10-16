@@ -335,19 +335,19 @@
             <span class="text-slate-500 text-[10px]">en vivo (stream AlphaQuant)</span>
           </div>
 
-          <!-- Status Pills Bar -->
+          <!-- Status Pills Bar (AlphaQuant Real Stack) -->
           <div class="flex flex-wrap gap-2 mt-2.5 text-[10px] font-mono">
-            <span class="px-2 py-0.5 rounded bg-slate-950/90 border border-emerald-500/40 text-emerald-300 flex items-center gap-1.5 shadow-sm">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Webhook
-            </span>
-            <span class="px-2 py-0.5 rounded bg-slate-950/90 border border-emerald-500/40 text-emerald-300 flex items-center gap-1.5 shadow-sm">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> AlphaQuant
-            </span>
-            <span class="px-2 py-0.5 rounded bg-slate-950/90 border border-emerald-500/40 text-emerald-300 flex items-center gap-1.5 shadow-sm">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Modo LIVE
-            </span>
             <span class="px-2 py-0.5 rounded bg-slate-950/90 border border-cyan-500/40 text-cyan-300 flex items-center gap-1.5 shadow-sm">
-              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span> MCP Hub
+              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span> MCP Protocol (Smithery)
+            </span>
+            <span class="px-2 py-0.5 rounded bg-slate-950/90 border border-emerald-500/40 text-emerald-300 flex items-center gap-1.5 shadow-sm">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> 0DTE Expected Move
+            </span>
+            <span class="px-2 py-0.5 rounded bg-slate-950/90 border border-amber-500/40 text-amber-300 flex items-center gap-1.5 shadow-sm">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> Centroide & Reversión
+            </span>
+            <span class="px-2 py-0.5 rounded bg-slate-950/90 border border-purple-500/40 text-purple-300 flex items-center gap-1.5 shadow-sm">
+              <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span> Latencia: &lt;75ms
             </span>
           </div>
         </div>
@@ -433,14 +433,14 @@
             </div>
           </div>
 
-          <!-- ================= WORKSTATION 1: RECEPTOR (Top-Left) ================= -->
-          <div class="absolute top-[68px] left-[45px] z-10 cursor-pointer group" onclick="focusAgent(1)">
+          <!-- ================= WORKSTATION 1: 0DTE_SENTINEL (Top-Left) ================= -->
+          <div class="absolute top-[68px] left-[45px] z-10 cursor-pointer group" onclick="focusAgent(0)">
             <!-- Speech Bubble -->
-            <div id="bubbleReceptor" class="pixel-bubble top-[-26px] left-[5px]">
-              Escuchando...
+            <div id="bubble0Dte" class="pixel-bubble top-[-26px] left-[0px]">
+              Banda: 7671 - 7721
             </div>
-            <!-- Character: RECEPTOR -->
-            <div id="charReceptor" class="absolute top-[-10px] left-[15px] z-10 transition-all">
+            <!-- Character: 0DTE_SENTINEL -->
+            <div id="char0Dte" class="absolute top-[-10px] left-[15px] z-10 transition-all">
               <svg width="30" height="38" viewBox="0 0 16 21" shape-rendering="crispEdges">
                 <rect x="4" y="1" width="8" height="4" fill="#92400e" />
                 <rect x="3" y="3" width="2" height="4" fill="#92400e" />
@@ -485,21 +485,21 @@
             </div>
             <!-- Name Label Under Desk -->
             <div class="text-center mt-0.5">
-              <span class="pixel-font text-[8px] text-cyan-400 font-bold tracking-wider">RECEPTOR</span>
+              <span class="pixel-font text-[7.5px] text-emerald-400 font-bold tracking-wider">0DTE_SENTINEL</span>
             </div>
           </div>
 
-          <!-- ================= WORKSTATION 2: EJECUTOR (Top-Right) ================= -->
-          <div class="absolute top-[68px] right-[45px] z-10 cursor-pointer group" onclick="focusAgent(2)">
+          <!-- ================= WORKSTATION 2: GEX_CENTROID (Top-Right) ================= -->
+          <div class="absolute top-[68px] right-[45px] z-10 cursor-pointer group" onclick="focusAgent(1)">
             <!-- Speech Bubbles -->
-            <div id="bubbleEjecutor1" class="pixel-bubble top-[-26px] right-[10px]">
-              Listo
+            <div id="bubbleGex1" class="pixel-bubble top-[-26px] right-[5px]">
+              Imán en $7,742
             </div>
-            <div id="bubbleEjecutor2" class="pixel-bubble top-[18px] right-[75px]">
-              9 chequeos OK
+            <div id="bubbleGex2" class="pixel-bubble top-[18px] right-[75px]">
+              Target: $7,694
             </div>
-            <!-- Character: EJECUTOR -->
-            <div id="charEjecutor" class="absolute top-[-10px] right-[42px] z-10 transition-all">
+            <!-- Character: GEX_CENTROID -->
+            <div id="charGex" class="absolute top-[-10px] right-[42px] z-10 transition-all">
               <svg width="30" height="38" viewBox="0 0 16 21" shape-rendering="crispEdges">
                 <rect x="4" y="1" width="8" height="4" fill="#1c1917" />
                 <rect x="3" y="2" width="2" height="5" fill="#1c1917" />
@@ -507,10 +507,10 @@
                 <rect x="5" y="4" width="6" height="5" fill="#b45309" />
                 <rect x="6" y="6" width="1" height="1" fill="#ffffff" />
                 <rect x="9" y="6" width="1" height="1" fill="#ffffff" />
-                <rect x="3" y="9" width="10" height="7" fill="#ea580c" />
+                <rect x="3" y="9" width="10" height="7" fill="#0284c7" />
                 <rect x="7" y="9" width="2" height="3" fill="#ffffff" />
-                <rect x="2" y="12" width="2" height="4" fill="#c2410c" />
-                <rect x="12" y="12" width="2" height="4" fill="#c2410c" />
+                <rect x="2" y="12" width="2" height="4" fill="#0369a1" />
+                <rect x="12" y="12" width="2" height="4" fill="#0369a1" />
                 <rect x="2" y="16" width="3" height="2" fill="#b45309" />
                 <rect x="11" y="16" width="3" height="2" fill="#b45309" />
                 <rect x="4" y="16" width="3" height="5" fill="#0f172a" />
@@ -532,9 +532,9 @@
                 <rect x="54" y="0" width="24" height="16" fill="#ded8c4" />
                 <rect x="53" y="1" width="2" height="14" fill="#b8b29c" />
                 <rect x="56" y="2" width="18" height="11" fill="#334155" />
-                <rect x="58" y="3" width="14" height="9" fill="#15803d" />
-                <rect x="60" y="5" width="8" height="2" fill="#4ade80" />
-                <rect x="60" y="8" width="10" height="1" fill="#86efac" />
+                <rect x="58" y="3" width="14" height="9" fill="#0284c7" />
+                <rect x="60" y="5" width="8" height="2" fill="#38bdf8" />
+                <rect x="60" y="8" width="10" height="1" fill="#7dd3fc" />
                 <rect x="62" y="16" width="8" height="3" fill="#ded8c4" />
                 <rect x="59" y="19" width="14" height="2" fill="#b8b29c" />
                 <rect x="18" y="15" width="24" height="4" fill="#ded8c4" />
@@ -543,13 +543,14 @@
             </div>
             <!-- Name Label Under Desk -->
             <div class="text-center mt-0.5">
-              <span class="pixel-font text-[8px] text-amber-400 font-bold tracking-wider">EJECUTOR</span>
+              <span class="pixel-font text-[7.5px] text-cyan-400 font-bold tracking-wider">GEX_CENTROID</span>
             </div>
           </div>
 
-          <!-- ================= WALKING COURIER IN AISLE ================= -->
+          <!-- ================= WALKING COURIER: TELEMETRY RUNNER ================= -->
           <div class="absolute top-[135px] left-[155px] z-15 pointer-events-none courier-walk">
-            <div class="courier-bob">
+            <div class="courier-bob relative flex flex-col items-center">
+              <span class="pixel-font text-[6px] text-emerald-400/90 whitespace-nowrap mb-0.5 bg-black/60 px-1 rounded">RUNNER</span>
               <svg width="22" height="32" viewBox="0 0 14 20" shape-rendering="crispEdges">
                 <rect x="3" y="1" width="8" height="3" fill="#78350f" />
                 <rect x="4" y="4" width="6" height="4" fill="#fbd5b5" />
@@ -587,14 +588,14 @@
             </svg>
           </div>
 
-          <!-- ================= WORKSTATION 3: CONTADOR (Bottom-Left) ================= -->
-          <div class="absolute top-[180px] left-[45px] z-10 cursor-pointer group" onclick="focusAgent(0)">
+          <!-- ================= WORKSTATION 3: PROPHET_VIX (Bottom-Left) ================= -->
+          <div class="absolute top-[180px] left-[45px] z-10 cursor-pointer group" onclick="focusAgent(2)">
             <!-- Speech Bubble with Neon Glow -->
-            <div id="bubbleContador" class="pixel-bubble pixel-bubble-pink top-[-26px] left-[0px]">
-              Libro al día
+            <div id="bubbleProphet" class="pixel-bubble pixel-bubble-pink top-[-26px] left-[0px]">
+              VIX: 17.20 (BEAR)
             </div>
-            <!-- Character: CONTADOR (With Glowing Halo Aura) -->
-            <div id="charContador" class="absolute top-[-10px] left-[15px] z-10 transition-all pink-aura">
+            <!-- Character: PROPHET_VIX (With Glowing Halo Aura) -->
+            <div id="charProphet" class="absolute top-[-10px] left-[15px] z-10 transition-all pink-aura">
               <svg width="30" height="38" viewBox="0 0 16 21" shape-rendering="crispEdges">
                 <rect x="4" y="1" width="8" height="4" fill="#0f172a" />
                 <rect x="3" y="3" width="2" height="4" fill="#0f172a" />
@@ -626,9 +627,9 @@
                 <rect x="54" y="0" width="24" height="16" fill="#ded8c4" />
                 <rect x="53" y="1" width="2" height="14" fill="#b8b29c" />
                 <rect x="56" y="2" width="18" height="11" fill="#334155" />
-                <rect x="58" y="3" width="14" height="9" fill="#15803d" />
-                <rect x="60" y="5" width="8" height="2" fill="#4ade80" />
-                <rect x="60" y="8" width="10" height="1" fill="#86efac" />
+                <rect x="58" y="3" width="14" height="9" fill="#db2777" />
+                <rect x="60" y="5" width="8" height="2" fill="#f472b6" />
+                <rect x="60" y="8" width="10" height="1" fill="#fbcfe8" />
                 <rect x="62" y="16" width="8" height="3" fill="#ded8c4" />
                 <rect x="59" y="19" width="14" height="2" fill="#b8b29c" />
                 <rect x="18" y="15" width="24" height="4" fill="#ded8c4" />
@@ -637,18 +638,18 @@
             </div>
             <!-- Name Label Under Desk -->
             <div class="text-center mt-0.5">
-              <span class="pixel-font text-[8px] text-pink-400 font-bold tracking-wider">CONTADOR</span>
+              <span class="pixel-font text-[7.5px] text-pink-400 font-bold tracking-wider">PROPHET_VIX</span>
             </div>
           </div>
 
-          <!-- ================= WORKSTATION 4: VIGILANTE (Bottom-Right) ================= -->
+          <!-- ================= WORKSTATION 4: MCP_DISPATCHER (Bottom-Right) ================= -->
           <div class="absolute top-[180px] right-[45px] z-10 cursor-pointer group" onclick="focusAgent(3)">
             <!-- Speech Bubble -->
-            <div id="bubbleVigilante" class="pixel-bubble top-[-26px] right-[10px]">
-              VIX tranquilo
+            <div id="bubbleMcp" class="pixel-bubble top-[-26px] right-[5px]">
+              Claude & Cursor OK
             </div>
-            <!-- Character: VIGILANTE -->
-            <div id="charVigilante" class="absolute top-[-10px] right-[42px] z-10 transition-all">
+            <!-- Character: MCP_DISPATCHER -->
+            <div id="charMcp" class="absolute top-[-10px] right-[42px] z-10 transition-all">
               <svg width="30" height="38" viewBox="0 0 16 21" shape-rendering="crispEdges">
                 <rect x="4" y="1" width="8" height="4" fill="#78350f" />
                 <rect x="2" y="3" width="2" height="4" fill="#94a3b8" />
@@ -657,9 +658,9 @@
                 <rect x="4" y="4" width="8" height="5" fill="#fbd5b5" />
                 <rect x="5" y="6" width="2" height="1" fill="#0f172a" />
                 <rect x="9" y="6" width="2" height="1" fill="#0f172a" />
-                <rect x="3" y="9" width="10" height="7" fill="#059669" />
-                <rect x="2" y="12" width="2" height="4" fill="#047857" />
-                <rect x="12" y="12" width="2" height="4" fill="#047857" />
+                <rect x="3" y="9" width="10" height="7" fill="#d97706" />
+                <rect x="2" y="12" width="2" height="4" fill="#b45309" />
+                <rect x="12" y="12" width="2" height="4" fill="#b45309" />
                 <rect x="2" y="16" width="3" height="2" fill="#fbd5b5" />
                 <rect x="11" y="16" width="3" height="2" fill="#fbd5b5" />
                 <rect x="4" y="16" width="3" height="5" fill="#1e293b" />
@@ -681,9 +682,9 @@
                 <rect x="54" y="0" width="24" height="16" fill="#ded8c4" />
                 <rect x="53" y="1" width="2" height="14" fill="#b8b29c" />
                 <rect x="56" y="2" width="18" height="11" fill="#334155" />
-                <rect x="58" y="3" width="14" height="9" fill="#15803d" />
-                <rect x="60" y="5" width="8" height="2" fill="#4ade80" />
-                <rect x="60" y="8" width="10" height="1" fill="#86efac" />
+                <rect x="58" y="3" width="14" height="9" fill="#d97706" />
+                <rect x="60" y="5" width="8" height="2" fill="#fbbf24" />
+                <rect x="60" y="8" width="10" height="1" fill="#fef08a" />
                 <rect x="62" y="16" width="8" height="3" fill="#ded8c4" />
                 <rect x="59" y="19" width="14" height="2" fill="#b8b29c" />
                 <rect x="18" y="15" width="24" height="4" fill="#ded8c4" />
@@ -692,7 +693,7 @@
             </div>
             <!-- Name Label Under Desk -->
             <div class="text-center mt-0.5">
-              <span class="pixel-font text-[8px] text-emerald-400 font-bold tracking-wider">VIGILANTE</span>
+              <span class="pixel-font text-[7.5px] text-amber-400 font-bold tracking-wider">MCP_DISPATCHER</span>
             </div>
           </div>
 
@@ -731,20 +732,27 @@
         <!-- ================= BOTTOM FOCUSED AGENT INSPECTOR CARD ================= -->
         <div id="inspectorCard" class="m-3 p-3.5 rounded-xl border-2 transition-all duration-500 cursor-pointer border-pink-500 bg-pink-950/20 shadow-lg shadow-pink-500/10" onclick="cycleNextAgent()">
           <div class="flex items-center justify-between text-xs mb-1.5">
-            <span id="inspectorTitle" class="pixel-font text-xs font-bold text-pink-400">CONTADOR</span>
+            <div class="flex items-center gap-2">
+              <span id="inspectorTitle" class="pixel-font text-xs font-bold text-pink-400">PROPHET_VIX</span>
+              <span id="inspectorEndpoint" class="text-[10px] font-mono text-slate-400 bg-black/50 px-2 py-0.5 rounded border border-slate-800">/v1/market/regime</span>
+            </div>
             <span class="font-mono text-[10px] text-slate-400 flex items-center gap-1.5">
               <span id="inspectorDot" class="w-2 h-2 rounded-sm bg-pink-500"></span> AUTO · <span id="inspectorCountdown">7</span> s
             </span>
           </div>
-          <h3 id="inspectorHeadline" class="text-sm md:text-base font-bold text-white tracking-wide">Sin posiciones abiertas hoy</h3>
+          <h3 id="inspectorHeadline" class="text-sm md:text-base font-bold text-white tracking-wide">Régimen: BEAR CONTRACTION (Fuerza: 56.8%)</h3>
           <p id="inspectorDescription" class="text-xs text-slate-300 mt-1 leading-relaxed">
-            Registra cada posición, el crédito recibido y, al cierre, el resultado.
+            Detecta compresión o expansión de volatilidad en tiempo real para determinar el sesgo de la sesión.
           </p>
           <div class="mt-2.5 pt-2 border-t border-slate-800/80 text-[10px] font-mono text-slate-400 flex items-center justify-between">
-            <span id="inspectorAction">Última acción: 10/16 11:58 · SPX VERTICAL</span>
+            <span id="inspectorAction">Última acción: 10/16 11:45 · VIX REGIME SHIFT DETECTED</span>
             <span class="text-[9px] text-slate-500 uppercase">Click para cambiar</span>
           </div>
         </div>
+
+      </div>
+
+    </div>
 
       </div>
 
@@ -885,64 +893,68 @@
     // ================= AGENT FOCUS STATE MACHINE =================
     const AGENTS = [
       {
-        name: "CONTADOR",
-        color: "pink",
-        borderClass: "border-pink-500 bg-pink-950/20 shadow-pink-500/10",
-        titleClass: "text-pink-400",
-        dotClass: "bg-pink-500",
-        charId: "charContador",
-        auraClass: "pink-aura",
-        bubbleId: "bubbleContador",
-        bubbleAuraClass: "pixel-bubble-pink",
-        headline: "Sin posiciones abiertas hoy",
-        description: "Registra cada posición, el crédito recibido y, al cierre, el resultado.",
-        action: "SPX VERTICAL MONITOR"
-      },
-      {
-        name: "RECEPTOR",
-        color: "cyan",
-        borderClass: "border-cyan-500 bg-cyan-950/20 shadow-cyan-500/10",
-        titleClass: "text-cyan-400",
-        dotClass: "bg-cyan-500",
-        charId: "charReceptor",
-        auraClass: "cyan-aura",
-        bubbleId: "bubbleReceptor",
-        bubbleAuraClass: "pixel-bubble-cyan",
-        headline: "Escuchando ticks de mercado NYSE / CBOE",
-        description: "Ingesta y procesa cotizaciones del SPX, spreads de opciones y telemetría en tiempo real.",
-        action: "WEBSOCKET TICK INGESTED"
-      },
-      {
-        name: "EJECUTOR",
-        color: "amber",
-        borderClass: "border-amber-500 bg-amber-950/20 shadow-amber-500/10",
-        titleClass: "text-amber-400",
-        dotClass: "bg-amber-500",
-        charId: "charEjecutor",
-        auraClass: "amber-aura",
-        bubbleId: "bubbleEjecutor1",
-        bubbleAuraClass: "pixel-bubble-amber",
-        headline: "9 chequeos cuantitativos OK",
-        description: "Verifica spread bid/ask, liquidez de strikes y cálculo de Expected Move 0DTE diario.",
-        action: "0DTE STRIKE VALIDATION"
-      },
-      {
-        name: "VIGILANTE",
+        name: "0DTE_SENTINEL",
+        endpoint: "/v1/market/expected-move",
         color: "emerald",
         borderClass: "border-emerald-500 bg-emerald-950/20 shadow-emerald-500/10",
         titleClass: "text-emerald-400",
         dotClass: "bg-emerald-500",
-        charId: "charVigilante",
+        charId: "char0Dte",
         auraClass: "green-aura",
-        bubbleId: "bubbleVigilante",
+        bubbleId: "bubble0Dte",
         bubbleAuraClass: "pixel-bubble-green",
-        headline: "Supervisión de Régimen y Reversión activa",
-        description: "Rastrea la desviación respecto al Centroide y vigila expansiones anómalas de volatilidad en VIX.",
-        action: "VOLATILITY REGIME WATCH"
+        headline: "Rango SPX 0DTE Contenido (Banda: 7,671 - 7,721)",
+        description: "Calcula la desviación estándar y bandas límite de contención para opciones que vencen hoy.",
+        action: "EXPECTED MOVE CALIBRATED"
+      },
+      {
+        name: "GEX_CENTROID",
+        endpoint: "/v1/market/levels",
+        color: "cyan",
+        borderClass: "border-cyan-500 bg-cyan-950/20 shadow-cyan-500/10",
+        titleClass: "text-cyan-400",
+        dotClass: "bg-cyan-500",
+        charId: "charGex",
+        auraClass: "cyan-aura",
+        bubbleId: "bubbleGex1",
+        bubbleAuraClass: "pixel-bubble-cyan",
+        headline: "Centroide: $7,742.99 · Target Cierre: $7,694.77",
+        description: "Modela el punto gravitacional del mercado y la fuerza de reversión a la media antes del cierre.",
+        action: "CENTROID GRAVITY UPDATE"
+      },
+      {
+        name: "PROPHET_VIX",
+        endpoint: "/v1/market/regime",
+        color: "pink",
+        borderClass: "border-pink-500 bg-pink-950/20 shadow-pink-500/10",
+        titleClass: "text-pink-400",
+        dotClass: "bg-pink-500",
+        charId: "charProphet",
+        auraClass: "pink-aura",
+        bubbleId: "bubbleProphet",
+        bubbleAuraClass: "pixel-bubble-pink",
+        headline: "Régimen: BEAR CONTRACTION (Fuerza: 56.8%)",
+        description: "Detecta compresión o expansión de volatilidad en tiempo real para determinar el sesgo de la sesión.",
+        action: "VIX REGIME SHIFT DETECTED"
+      },
+      {
+        name: "MCP_DISPATCHER",
+        endpoint: "smithery.ai/@homero-garza-g/alphaquant",
+        color: "amber",
+        borderClass: "border-amber-500 bg-amber-950/20 shadow-amber-500/10",
+        titleClass: "text-amber-400",
+        dotClass: "bg-amber-500",
+        charId: "charMcp",
+        auraClass: "amber-aura",
+        bubbleId: "bubbleMcp",
+        bubbleAuraClass: "pixel-bubble-amber",
+        headline: "Protocolo MCP Activo (Smithery Verified)",
+        description: "Despacha datos cuantitativos estructurados a Claude, Cursor y bots Python autónomos en <75ms.",
+        action: "MCP TOOL CALL DISPATCHED"
       }
     ];
 
-    let currentAgentIndex = 0;
+    let currentAgentIndex = 2; // Default to PROPHET_VIX (pink aura) matching the screenshot!
     let agentCountdown = 7;
 
     function focusAgent(idx) {
@@ -967,6 +979,7 @@
       // Update Inspector Card
       const card = document.getElementById('inspectorCard');
       const title = document.getElementById('inspectorTitle');
+      const endpoint = document.getElementById('inspectorEndpoint');
       const dot = document.getElementById('inspectorDot');
       const headline = document.getElementById('inspectorHeadline');
       const desc = document.getElementById('inspectorDescription');
@@ -978,6 +991,9 @@
       if (title) {
         title.innerText = agent.name;
         title.className = `pixel-font text-xs font-bold ${agent.titleClass}`;
+      }
+      if (endpoint) {
+        endpoint.innerText = agent.endpoint;
       }
       if (dot) {
         dot.className = `w-2 h-2 rounded-sm ${agent.dotClass}`;
@@ -1031,6 +1047,18 @@
         const officeSub = document.getElementById('officeSubMetrics');
         if (officeSub) officeSub.innerText = `EM: ${lower} - ${upper} · VIX: ${vix}`;
 
+        // Live update speech bubbles of each agent
+        const b0 = document.getElementById('bubble0Dte');
+        if (b0) b0.innerText = `Banda: ${lower} - ${upper}`;
+        const bg1 = document.getElementById('bubbleGex1');
+        if (bg1) bg1.innerText = `Imán: ${centroid}`;
+        const bg2 = document.getElementById('bubbleGex2');
+        if (bg2) bg2.innerText = `Target: ${target}`;
+        const bp = document.getElementById('bubbleProphet');
+        if (bp) bp.innerText = `VIX: ${vix} (${regime.split(' ')[0]})`;
+        const bm = document.getElementById('bubbleMcp');
+        if (bm) bm.innerText = `Claude/Cursor <75ms`;
+
         // HUD left cards
         document.getElementById('hudSpot').innerText = spot;
         document.getElementById('hudEM').innerText = em;
@@ -1056,11 +1084,14 @@
           document.getElementById('rangeBarFill').style.width = `${pct}%`;
           document.getElementById('hudPercent').innerText = `${pct}% DEL RANGO`;
 
-          // Dynamic update to agent headline when focused on CONTADOR
-          if (currentAgentIndex === 0) {
-            const headline = document.getElementById('inspectorHeadline');
-            if (headline) headline.innerText = `Rango SPX 0DTE contenido al ${pct}%`;
-          }
+          // Keep headlines fresh with real data
+          AGENTS[0].headline = `Rango SPX 0DTE (${pct}% del Rango) · [${lower} - ${upper}]`;
+          AGENTS[1].headline = `Centroide: ${centroid} · Target Cierre: ${target}`;
+          AGENTS[2].headline = `Régimen: ${regime} (VIX: ${vix})`;
+
+          // If current agent is showing, refresh headline
+          const headline = document.getElementById('inspectorHeadline');
+          if (headline) headline.innerText = AGENTS[currentAgentIndex].headline;
         }
 
         // Marquee Text
