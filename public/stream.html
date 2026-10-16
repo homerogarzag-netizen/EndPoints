@@ -189,10 +189,10 @@
     }
   </style>
 </head>
-<body class="crt flex flex-col justify-between p-4 md:p-6 select-none">
+<body class="crt flex flex-col justify-between p-2.5 md:p-3 select-none h-screen w-screen overflow-hidden">
 
   <!-- TOP BAR: Live Marquee Ticker -->
-  <header class="w-full bg-slate-950/90 border border-emerald-500/40 rounded-xl overflow-hidden neon-box-green flex flex-col z-20">
+  <header class="w-full shrink-0 bg-slate-950/90 border border-emerald-500/40 rounded-xl overflow-hidden neon-box-green flex flex-col z-20">
     <!-- Top sub-header with clocks and status -->
     <div class="px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs bg-slate-900/80">
       <div class="flex items-center gap-3">
@@ -353,7 +353,7 @@
         </div>
 
         <!-- CENTER ROOM: 2D Pixel-Art Office Floor -->
-        <div class="relative w-full h-[320px] overflow-hidden select-none border-b-2 border-slate-800 office-floor">
+        <div class="relative w-full h-[285px] overflow-hidden select-none border-b-2 border-slate-800 office-floor">
           
           <!-- Office Wall (Top 55px) -->
           <div class="absolute top-0 left-0 right-0 h-[55px] office-wall flex items-center justify-between px-4 z-0">
@@ -729,29 +729,27 @@
         </div>
 
         <!-- ================= BOTTOM FOCUSED AGENT INSPECTOR CARD ================= -->
-        <div id="inspectorCard" class="m-3 p-3.5 rounded-xl border-2 transition-all duration-500 cursor-pointer border-pink-500 bg-pink-950/20 shadow-lg shadow-pink-500/10" onclick="cycleNextAgent()">
-          <div class="flex items-center justify-between text-xs mb-1.5">
-            <div class="flex items-center gap-2">
-              <span id="inspectorTitle" class="pixel-font text-xs font-bold text-pink-400">PROPHET_VIX</span>
-              <span id="inspectorEndpoint" class="text-[10px] font-mono text-slate-400 bg-black/50 px-2 py-0.5 rounded border border-slate-800">/v1/market/regime</span>
+        <div id="inspectorCard" class="m-2.5 p-3 rounded-xl border-2 transition-all duration-300 cursor-pointer border-pink-500 bg-pink-950/20 shadow-lg shadow-pink-500/10 h-[124px] flex flex-col justify-between overflow-hidden shrink-0" onclick="cycleNextAgent()">
+          <div>
+            <div class="flex items-center justify-between text-xs mb-1">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span id="inspectorTitle" class="pixel-font text-[11px] font-bold text-pink-400 shrink-0">PROPHET_VIX</span>
+                <span id="inspectorEndpoint" class="text-[9px] font-mono text-slate-400 bg-black/60 px-1.5 py-0.5 rounded border border-slate-800 truncate max-w-[175px]">/v1/market/regime</span>
+              </div>
+              <span class="font-mono text-[10px] text-slate-400 flex items-center gap-1.5 shrink-0">
+                <span id="inspectorDot" class="w-1.5 h-1.5 rounded-sm bg-pink-500"></span> AUTO · <span id="inspectorCountdown">7</span> s
+              </span>
             </div>
-            <span class="font-mono text-[10px] text-slate-400 flex items-center gap-1.5">
-              <span id="inspectorDot" class="w-2 h-2 rounded-sm bg-pink-500"></span> AUTO · <span id="inspectorCountdown">7</span> s
-            </span>
+            <h3 id="inspectorHeadline" class="text-xs md:text-sm font-bold text-white tracking-wide truncate">Régimen: BEAR CONTRACTION (Fuerza: 56.8%)</h3>
+            <p id="inspectorDescription" class="text-[11px] text-slate-300 mt-0.5 leading-snug line-clamp-2">
+              Detecta compresión o expansión de volatilidad en tiempo real para determinar el sesgo de la sesión.
+            </p>
           </div>
-          <h3 id="inspectorHeadline" class="text-sm md:text-base font-bold text-white tracking-wide">Régimen: BEAR CONTRACTION (Fuerza: 56.8%)</h3>
-          <p id="inspectorDescription" class="text-xs text-slate-300 mt-1 leading-relaxed">
-            Detecta compresión o expansión de volatilidad en tiempo real para determinar el sesgo de la sesión.
-          </p>
-          <div class="mt-2.5 pt-2 border-t border-slate-800/80 text-[10px] font-mono text-slate-400 flex items-center justify-between">
-            <span id="inspectorAction">Última acción: 10/16 11:45 · VIX REGIME SHIFT DETECTED</span>
-            <span class="text-[9px] text-slate-500 uppercase">Click para cambiar</span>
+          <div class="pt-1.5 border-t border-slate-800/80 text-[9px] font-mono text-slate-400 flex items-center justify-between">
+            <span id="inspectorAction" class="truncate">Última acción: 10/16 11:45 · VIX REGIME SHIFT DETECTED</span>
+            <span class="text-[8px] text-slate-500 uppercase shrink-0">Click para cambiar</span>
           </div>
         </div>
-
-      </div>
-
-    </div>
 
       </div>
 
@@ -814,7 +812,7 @@
   </main>
 
   <!-- BOTTOM BAR: Audio & Stream Status Overlay -->
-  <footer class="w-full bg-slate-950/90 border border-slate-800 px-4 py-2.5 rounded-xl flex items-center justify-between text-xs text-slate-400 z-20">
+  <footer class="w-full shrink-0 bg-slate-950/90 border border-slate-800 px-4 py-2 rounded-xl flex items-center justify-between text-xs text-slate-400 z-20">
     <div class="flex items-center gap-3">
       <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
       <span class="pixel-font text-[8px] text-slate-300">STREAMING 1080p 60FPS</span>
@@ -985,7 +983,7 @@
       const action = document.getElementById('inspectorAction');
 
       if (card) {
-        card.className = `m-3 p-3.5 rounded-xl border-2 transition-all duration-500 cursor-pointer ${agent.borderClass}`;
+        card.className = `m-2.5 p-3 rounded-xl border-2 transition-all duration-300 cursor-pointer h-[124px] flex flex-col justify-between overflow-hidden shrink-0 ${agent.borderClass}`;
       }
       if (title) {
         title.innerText = agent.name;
