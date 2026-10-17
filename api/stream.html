@@ -228,20 +228,22 @@
     <!-- Scrolling LED Marquee -->
     <div class="overflow-hidden whitespace-nowrap py-2 bg-black/60 relative">
       <div class="animate-marquee font-mono text-xs font-bold uppercase tracking-widest text-emerald-400" id="marqueeTicker">
-        <span class="mx-4 text-emerald-300">★ SPX 0DTE EXPECTED MOVE IN PROGRESS</span>
-        <span class="mx-4 text-white">SPOT: <span id="tickerSpot">--</span></span>
-        <span class="mx-4 text-amber-300">EM BANDS: <span id="tickerBands">[-- A --]</span></span>
-        <span class="mx-4 text-cyan-300">VIX REGIME: <span id="tickerVix">--</span></span>
-        <span class="mx-4 text-purple-300">CENTROIDE: <span id="tickerCentroid">--</span></span>
-        <span class="mx-4 text-emerald-400">OBJETIVO CIERRE: <span id="tickerTarget">--</span></span>
+        <span class="mx-4 text-emerald-300">★ ALPHAQUANT MULTI-ASSET ENGINE</span>
+        <span class="mx-4 text-white">SPX: <span id="tickerSpot">--</span></span>
+        <span class="mx-4 text-cyan-300">QQQ: <span id="tickerQqq">$709.48</span></span>
+        <span class="mx-4 text-purple-300">SPY: <span id="tickerSpy">$763.11</span></span>
+        <span class="mx-4 text-amber-300">GAMMA WALLS: <span id="tickerGexWalls">CW: $7,650 | PW: $7,640 (FLIP: $7,645)</span></span>
+        <span class="mx-4 text-emerald-400">EM BANDS: <span id="tickerBands">[-- A --]</span></span>
+        <span class="mx-4 text-pink-300">VIX: <span id="tickerVix">--</span></span>
         <span class="mx-4 text-slate-400">// PROTOCOLO MCP ACTIVO // POWERED BY ALPHAQUANT // VERIFIED AT SMITHERY.AI</span>
         <!-- Duplicated for seamless loop -->
-        <span class="mx-4 text-emerald-300">★ SPX 0DTE EXPECTED MOVE IN PROGRESS</span>
-        <span class="mx-4 text-white">SPOT: <span id="tickerSpot2">--</span></span>
-        <span class="mx-4 text-amber-300">EM BANDS: <span id="tickerBands2">[-- A --]</span></span>
-        <span class="mx-4 text-cyan-300">VIX REGIME: <span id="tickerVix2">--</span></span>
-        <span class="mx-4 text-purple-300">CENTROIDE: <span id="tickerCentroid2">--</span></span>
-        <span class="mx-4 text-emerald-400">OBJETIVO CIERRE: <span id="tickerTarget2">--</span></span>
+        <span class="mx-4 text-emerald-300">★ ALPHAQUANT MULTI-ASSET ENGINE</span>
+        <span class="mx-4 text-white">SPX: <span id="tickerSpot2">--</span></span>
+        <span class="mx-4 text-cyan-300">QQQ: <span id="tickerQqq2">$709.48</span></span>
+        <span class="mx-4 text-purple-300">SPY: <span id="tickerSpy2">$763.11</span></span>
+        <span class="mx-4 text-amber-300">GAMMA WALLS: <span id="tickerGexWalls2">CW: $7,650 | PW: $7,640 (FLIP: $7,645)</span></span>
+        <span class="mx-4 text-emerald-400">EM BANDS: <span id="tickerBands2">[-- A --]</span></span>
+        <span class="mx-4 text-pink-300">VIX: <span id="tickerVix2">--</span></span>
         <span class="mx-4 text-slate-400">// PROTOCOLO MCP ACTIVO // POWERED BY ALPHAQUANT // VERIFIED AT SMITHERY.AI</span>
       </div>
     </div>
@@ -285,7 +287,7 @@
       <!-- Card: Mean-Reversion Centroid & Target Close -->
       <div class="bg-slate-950/80 p-4 rounded-xl border border-slate-800 neon-box-cyan backdrop-blur">
         <div class="flex items-center justify-between text-xs text-slate-400 mb-1 border-b border-slate-800 pb-2">
-          <span class="pixel-font text-[9px] text-cyan-400">REVERSION LEVELS</span>
+          <span class="pixel-font text-[9px] text-cyan-400">REVERSION & GEX LEVELS</span>
           <i class="fa-solid fa-crosshairs text-cyan-400 text-xs"></i>
         </div>
 
@@ -300,6 +302,25 @@
             <p class="text-xl font-bold text-emerald-400 font-mono" id="hudTarget">$7,745.95</p>
             <span class="text-[10px] text-slate-500 font-mono" id="hudDist">Dist: +2.16</span>
           </div>
+        </div>
+
+        <!-- Gamma Walls Institutional Row -->
+        <div class="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] font-mono">
+          <span class="text-slate-400 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            <span>CW:</span>
+            <span class="text-emerald-300 font-bold" id="hudCallWall">$7,650</span>
+          </span>
+          <span class="text-slate-400 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+            <span>PW:</span>
+            <span class="text-red-300 font-bold" id="hudPutWall">$7,640</span>
+          </span>
+          <span class="text-slate-400 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+            <span>FLIP:</span>
+            <span class="text-amber-300 font-bold" id="hudZeroGamma">$7,645</span>
+          </span>
         </div>
       </div>
 
@@ -356,10 +377,10 @@
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> 0DTE Expected Move
             </span>
             <span class="px-2 py-0.5 rounded bg-slate-950/90 border border-amber-500/40 text-amber-300 flex items-center gap-1.5 shadow-sm">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> Centroide & Reversión
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> GEX Walls & Reversión
             </span>
             <span class="px-2 py-0.5 rounded bg-slate-950/90 border border-purple-500/40 text-purple-300 flex items-center gap-1.5 shadow-sm">
-              <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span> Latencia: &lt;75ms
+              <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span> SPX · QQQ · SPY
             </span>
           </div>
         </div>
@@ -505,10 +526,10 @@
           <div class="absolute top-[68px] right-[45px] z-10 cursor-pointer group" onclick="focusAgent(1)">
             <!-- Speech Bubbles -->
             <div id="bubbleGex1" class="pixel-bubble top-[-26px] right-[5px]">
-              Imán en $7,742
+              Walls: 7640P - 7650C
             </div>
             <div id="bubbleGex2" class="pixel-bubble top-[18px] right-[75px]">
-              Target: $7,694
+              Flip: $7,645 · Imán: $7,638
             </div>
             <!-- Character: GEX_CENTROID -->
             <div id="charGex" class="absolute top-[-10px] right-[42px] z-10 transition-all">
@@ -555,7 +576,7 @@
             </div>
             <!-- Name Label Under Desk -->
             <div class="text-center mt-0.5">
-              <span class="pixel-font text-[7.5px] text-cyan-400 font-bold tracking-wider">GEX_CENTROID</span>
+              <span class="pixel-font text-[7.5px] text-cyan-400 font-bold tracking-wider">GEX_SENTINEL</span>
             </div>
           </div>
 
@@ -917,8 +938,8 @@
         action: "EXPECTED MOVE CALIBRATED"
       },
       {
-        name: "GEX_CENTROID",
-        endpoint: "/v1/market/levels",
+        name: "GEX_SENTINEL",
+        endpoint: "/v1/market/gex",
         color: "cyan",
         borderClass: "border-cyan-500 bg-cyan-950/20 shadow-cyan-500/10",
         titleClass: "text-cyan-400",
@@ -927,9 +948,9 @@
         auraClass: "cyan-aura",
         bubbleId: "bubbleGex1",
         bubbleAuraClass: "pixel-bubble-cyan",
-        headline: "Centroide: $7,742.99 · Target Cierre: $7,694.77",
-        description: "Modela el punto gravitacional del mercado y la fuerza de reversión a la media antes del cierre.",
-        action: "CENTROID GRAVITY UPDATE"
+        headline: "Call Wall: $7,650 · Put Wall: $7,640 (Flip: $7,645)",
+        description: "Monitorea exposición Gamma institucional (GEX), techos/pisos de opciones y reversión al Centroide.",
+        action: "GEX GAMMA WALLS MAPPED"
       },
       {
         name: "PROPHET_VIX",
@@ -1099,13 +1120,28 @@
         const hudDataEl = document.getElementById('hudDataTime');
         if (hudDataEl) hudDataEl.innerText = fullTimeLabel;
 
+        // Gamma Walls (GEX)
+        const cw = d.call_wall ? `$${Math.round(d.call_wall).toLocaleString()}` : '$7,650';
+        const pw = d.put_wall ? `$${Math.round(d.put_wall).toLocaleString()}` : '$7,640';
+        const flip = d.zero_gamma ? `$${Math.round(d.zero_gamma).toLocaleString()}` : '$7,645';
+        const cwStrike = d.call_wall ? Math.round(d.call_wall) : 7650;
+        const pwStrike = d.put_wall ? Math.round(d.put_wall) : 7640;
+
+        // Update Gamma Walls Institutional Row
+        const elCw = document.getElementById('hudCallWall');
+        if (elCw) elCw.innerText = cw;
+        const elPw = document.getElementById('hudPutWall');
+        if (elPw) elPw.innerText = pw;
+        const elFlip = document.getElementById('hudZeroGamma');
+        if (elFlip) elFlip.innerText = flip;
+
         // Live update speech bubbles of each agent
         const b0 = document.getElementById('bubble0Dte');
         if (b0) b0.innerText = `Banda: ${lower} - ${upper}`;
         const bg1 = document.getElementById('bubbleGex1');
-        if (bg1) bg1.innerText = `Imán: ${centroid}`;
+        if (bg1) bg1.innerText = `Walls: ${pwStrike}P - ${cwStrike}C`;
         const bg2 = document.getElementById('bubbleGex2');
-        if (bg2) bg2.innerText = `Target: ${target}`;
+        if (bg2) bg2.innerText = `Flip: ${flip} · Imán: ${centroid}`;
         const bp = document.getElementById('bubbleProphet');
         if (bp) bp.innerText = `VIX: ${vix} (${regime.split(' ')[0]})`;
         const bm = document.getElementById('bubbleMcp');
@@ -1138,7 +1174,7 @@
 
           // Keep headlines fresh with real data
           AGENTS[0].headline = `Rango SPX 0DTE (${pct}% del Rango) · [${lower} - ${upper}]`;
-          AGENTS[1].headline = `Centroide: ${centroid} · Target Cierre: ${target}`;
+          AGENTS[1].headline = `Call Wall: ${cw} · Put Wall: ${pw} (Flip: ${flip})`;
           AGENTS[2].headline = `Régimen: ${regime} (VIX: ${vix})`;
 
           // If current agent is showing, refresh headline
@@ -1158,6 +1194,40 @@
         document.getElementById('tickerVix2').innerText = `${vix} (${regime})`;
         document.getElementById('tickerCentroid2').innerText = centroid;
         document.getElementById('tickerTarget2').innerText = target;
+
+        const gexWallsText = `CW: ${cw} | PW: ${pw} (FLIP: ${flip})`;
+        const elGex1 = document.getElementById('tickerGexWalls');
+        if (elGex1) elGex1.innerText = gexWallsText;
+        const elGex2 = document.getElementById('tickerGexWalls2');
+        if (elGex2) elGex2.innerText = gexWallsText;
+
+        // Fetch Multi-Asset Ticker Data (QQQ & SPY)
+        try {
+          const qqqRes = await fetch('/v1/market/summary?symbol=QQQ', { headers: { 'X-Internal-Dashboard': 'true' } });
+          if (qqqRes.ok) {
+            const qqqData = await qqqRes.json();
+            if (qqqData.price) {
+              const qqqStr = `$${qqqData.price.toFixed(2)}`;
+              const tQqq = document.getElementById('tickerQqq');
+              if (tQqq) tQqq.innerText = qqqStr;
+              const tQqq2 = document.getElementById('tickerQqq2');
+              if (tQqq2) tQqq2.innerText = qqqStr;
+            }
+          }
+          const spyRes = await fetch('/v1/market/summary?symbol=SPY', { headers: { 'X-Internal-Dashboard': 'true' } });
+          if (spyRes.ok) {
+            const spyData = await spyRes.json();
+            if (spyData.price) {
+              const spyStr = `$${spyData.price.toFixed(2)}`;
+              const tSpy = document.getElementById('tickerSpy');
+              if (tSpy) tSpy.innerText = spyStr;
+              const tSpy2 = document.getElementById('tickerSpy2');
+              if (tSpy2) tSpy2.innerText = spyStr;
+            }
+          }
+        } catch (err) {
+          // ignore network hiccups
+        }
 
       } catch (e) {
         console.error('Error in live market poll:', e);
@@ -1187,6 +1257,47 @@
       logs.appendChild(newDiv);
       if (logs.children.length > 5) {
         logs.removeChild(logs.children[0]);
+      }
+    }
+
+    // Dynamic AI Agent Feed Cycler (Right Column)
+    const AGENT_FEEDS = [
+      { agent: "CLAUDE_3_5", query: "/v1/market/gex?symbol=SPX", ms: "42ms", color: "text-purple-400" },
+      { agent: "CURSOR_CLI", query: "/v1/market/summary?symbol=QQQ", ms: "58ms", color: "text-cyan-400" },
+      { agent: "OPENAI_SWARM", query: "/v1/market/expected-move", ms: "39ms", color: "text-emerald-400" },
+      { agent: "DEEPSEEK_R1", query: "/v1/market/gex?symbol=QQQ", ms: "47ms", color: "text-blue-400" },
+      { agent: "QUANT_PYTHON", query: "/v1/market/levels?symbol=SPX", ms: "51ms", color: "text-amber-400" },
+      { agent: "SMITHERY_MCP", query: "tools/call: get_gex_levels", ms: "64ms", color: "text-pink-400" },
+      { agent: "COPILOT_AGENT", query: "/v1/market/summary?symbol=SPY", ms: "45ms", color: "text-indigo-400" },
+      { agent: "AUTONOMOUS_0DTE", query: "tools/call: get_0dte_expected_move", ms: "53ms", color: "text-emerald-400" }
+    ];
+    let feedIndex = 0;
+
+    function cycleAgentFeed() {
+      const feedContainer = document.getElementById('streamFeedList');
+      if (!feedContainer) return;
+      
+      const item = AGENT_FEEDS[feedIndex % AGENT_FEEDS.length];
+      feedIndex++;
+
+      const el = document.createElement('div');
+      el.className = 'p-2 bg-slate-900/60 rounded border border-slate-800 flex justify-between items-center transition-all duration-300 transform -translate-y-2 opacity-0';
+      el.innerHTML = `
+        <div class="min-w-0">
+          <span class="${item.color} font-bold text-[11px]">${item.agent}</span>
+          <p class="text-[10px] text-slate-400 font-mono truncate">${item.query}</p>
+        </div>
+        <span class="text-emerald-400 text-[11px] font-mono shrink-0 ml-2">${item.ms}</span>
+      `;
+
+      feedContainer.insertBefore(el, feedContainer.firstChild);
+
+      requestAnimationFrame(() => {
+        el.classList.remove('-translate-y-2', 'opacity-0');
+      });
+
+      while (feedContainer.children.length > 3) {
+        feedContainer.removeChild(feedContainer.lastChild);
       }
     }
 
@@ -1240,6 +1351,7 @@
       focusAgent(0); // Default to CONTADOR matching the reference screenshot!
 
       setInterval(appendRandomLog, 4500);
+      setInterval(cycleAgentFeed, 3200);
     });
   </script>
 </body>
