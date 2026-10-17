@@ -79,12 +79,10 @@ async def add_edge_cache_headers(request: Request, call_next):
         path = request.scope.get("path", "")
         # Endpoints de mercado y MCP: caché perimetral de 10 segundos
         if path.startswith(("/v1/market/", "/api/v1/market/", "/mcp", "/api/mcp")):
-            if "Cache-Control" not in response.headers:
-                response.headers["Cache-Control"] = "public, max-age=5, s-maxage=10, stale-while-revalidate=20"
+            response.headers["Cache-Control"] = "public, max-age=5, s-maxage=10, stale-while-revalidate=20"
         # Páginas estáticas y documentación
         elif path in ["/dashboard", "/stream", "/docs", "/llms.txt", "/"]:
-            if "Cache-Control" not in response.headers:
-                response.headers["Cache-Control"] = "public, max-age=60, s-maxage=300"
+            response.headers["Cache-Control"] = "public, max-age=60, s-maxage=300"
     return response
 
 
