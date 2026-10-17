@@ -7,8 +7,10 @@
 
 ## Información General
 
-- **Base URL:** `/v1`
-- **Protocolo:** REST / HTTP GET
+- **Base URL:** `https://end-points.vercel.app/v1`
+- **Protocolo:** REST / HTTP GET & MCP (Model Context Protocol en `/mcp`)
+- **Repositorio Código Fuente:** `https://github.com/homerogarzag-netizen/EndPoints`
+- **Guía de Conexión de Agentes:** `https://end-points.vercel.app/dashboard#connect`
 - **Formato:** JSON estricto, ultra-compacto, optimizado para bajo consumo de tokens.
 - **Autenticación:** Abierta durante fase de sondeo (telemetría anónima activada).
 - **CORS:** Habilitado para todos los orígenes (`*`).

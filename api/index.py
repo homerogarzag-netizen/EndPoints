@@ -147,9 +147,13 @@ async def root(request: Request, background_tasks: BackgroundTasks):
         "service": API_TITLE,
         "version": API_VERSION,
         "status": "operational",
+        "repository": "https://github.com/homerogarzag-netizen/EndPoints",
         "documentation": "/docs",
         "dashboard": "/dashboard",
+        "stream": "/stream",
         "llms_discovery": "/llms.txt",
+        "mcp_protocol": "/mcp",
+        "agent_quickstart": "/dashboard#connect",
         "endpoints": [
             "/v1/market/expected-move",
             "/v1/market/regime",

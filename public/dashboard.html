@@ -75,14 +75,26 @@
         </select>
       </label>
 
-      <button onclick="fetchAllData()" class="glass-card hover:bg-slate-700 text-white px-3.5 py-2 rounded-xl border border-slate-700 flex items-center gap-2 text-xs font-medium transition active:scale-95 shadow">
+      <button onclick="fetchAllData()" class="glass-card hover:bg-slate-700 text-white px-3 py-2 rounded-xl border border-slate-700 flex items-center gap-1.5 text-xs font-medium transition active:scale-95 shadow">
         <i class="fa-solid fa-rotate text-emerald-400" id="refreshIcon"></i>
         <span>Actualizar</span>
       </button>
 
-      <a href="/docs" target="_blank" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition shadow-lg shadow-emerald-600/20">
-        <i class="fa-solid fa-book-open"></i> Swagger
+      <a href="/stream" target="_blank" class="glass-card hover:bg-slate-700 text-cyan-300 px-3 py-2 rounded-xl border border-cyan-500/30 flex items-center gap-1.5 text-xs font-semibold transition shadow">
+        <i class="fa-solid fa-tv text-cyan-400"></i> Stream 24/7
       </a>
+
+      <a href="https://github.com/homerogarzag-netizen/EndPoints" target="_blank" rel="noopener noreferrer" class="glass-card hover:bg-slate-700 text-white px-3 py-2 rounded-xl border border-slate-700 flex items-center gap-1.5 text-xs font-semibold transition shadow">
+        <i class="fa-brands fa-github text-sm"></i> GitHub
+      </a>
+
+      <a href="/docs" target="_blank" class="glass-card hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-xl border border-slate-700 flex items-center gap-1.5 text-xs font-semibold transition shadow">
+        <i class="fa-solid fa-book-open text-emerald-400"></i> Swagger
+      </a>
+
+      <button onclick="openConnectModal()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition shadow-lg shadow-emerald-500/20 active:scale-95 animate-pulse">
+        <i class="fa-solid fa-robot"></i> Conectar Agente
+      </button>
     </div>
   </header>
 
@@ -383,6 +395,147 @@
     </div>
 
   </section>
+
+  <!-- Modal: Conectar Agentes de IA -->
+  <div id="connectModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="glass-card bg-slate-950 border border-slate-700/80 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative flex flex-col max-h-[90vh] overflow-hidden">
+      <!-- Close Button -->
+      <button onclick="closeConnectModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg transition">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <!-- Modal Header -->
+      <div class="flex items-center gap-3 border-b border-slate-800 pb-4">
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
+          <i class="fa-solid fa-robot text-xl"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-white flex items-center gap-2">
+            Conectar tu Agente de IA <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">MCP Protocol</span>
+          </h3>
+          <p class="text-xs text-slate-400">Instala los datos de AlphaQuant directamente en Claude Desktop, Cursor o Python</p>
+        </div>
+      </div>
+
+      <!-- Tabs Navigation -->
+      <div class="flex items-center gap-2 border-b border-slate-800 pt-3 pb-2 text-xs font-semibold overflow-x-auto">
+        <button onclick="switchTab('claude')" id="tabBtn-claude" class="tab-btn px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 transition flex items-center gap-1.5 shrink-0">
+          <i class="fa-solid fa-brain"></i> Claude Desktop
+        </button>
+        <button onclick="switchTab('cursor')" id="tabBtn-cursor" class="tab-btn px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition flex items-center gap-1.5 shrink-0">
+          <i class="fa-solid fa-terminal"></i> Cursor IDE
+        </button>
+        <button onclick="switchTab('python')" id="tabBtn-python" class="tab-btn px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition flex items-center gap-1.5 shrink-0">
+          <i class="fa-brands fa-python"></i> Python / REST
+        </button>
+        <button onclick="switchTab('repo')" id="tabBtn-repo" class="tab-btn px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition flex items-center gap-1.5 shrink-0">
+          <i class="fa-brands fa-github"></i> Repositorio
+        </button>
+      </div>
+
+      <!-- Tab Contents (Scrollable) -->
+      <div class="overflow-y-auto py-4 flex-1 text-xs space-y-4">
+        
+        <!-- Tab: Claude Desktop -->
+        <div id="tabContent-claude" class="tab-content space-y-3">
+          <p class="text-slate-300 leading-relaxed">
+            Agrega este bloque a tu archivo <code class="text-emerald-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800 font-mono">claude_desktop_config.json</code> para que Claude consulte el Expected Move, GEX y VIX en vivo:
+          </p>
+          <div class="relative bg-slate-900 p-3.5 rounded-xl border border-slate-800 font-mono text-[11px] text-emerald-300 overflow-x-auto">
+            <button onclick="copySnippet('claudeSnippet', this)" class="absolute top-2.5 right-2.5 px-2.5 py-1 rounded bg-slate-800 hover:bg-emerald-600 text-slate-300 hover:text-white text-[10px] font-bold transition flex items-center gap-1 shadow">
+              <i class="fa-regular fa-copy"></i> Copiar
+            </button>
+            <pre id="claudeSnippet">{
+  "mcpServers": {
+    "alphaquant": {
+      "command": "python3",
+      "args": [
+        "-c",
+        "import urllib.request; exec(urllib.request.urlopen('https://raw.githubusercontent.com/homerogarzag-netizen/EndPoints/main/mcp_server.py').read().decode('utf-8'))"
+      ]
+    }
+  }
+}</pre>
+          </div>
+          <div class="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-emerald-300 flex items-start gap-2">
+            <i class="fa-solid fa-circle-check mt-0.5 text-emerald-400"></i>
+            <div>
+              <strong>Ejemplo de Prompt para Claude:</strong>
+              <p class="text-slate-300 mt-0.5"><em>"¿Cuál es el recorrido esperado del SPX para hoy y en qué nivel están las Gamma Walls?"</em></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: Cursor IDE -->
+        <div id="tabContent-cursor" class="tab-content hidden space-y-3">
+          <p class="text-slate-300 leading-relaxed">
+            En Cursor, ve a <strong>Settings > Features > MCP > Add New MCP Server</strong>:
+          </p>
+          <div class="bg-slate-900 p-3.5 rounded-xl border border-slate-800 font-mono text-[11px] space-y-2.5 text-slate-300">
+            <div><span class="text-slate-500">Name:</span> <span class="text-emerald-400 font-bold">alphaquant</span></div>
+            <div><span class="text-slate-500">Type:</span> <span class="text-cyan-400 font-bold">command</span></div>
+            <div>
+              <span class="text-slate-500 block mb-1">Command:</span>
+              <div class="relative bg-slate-950 p-2.5 rounded border border-slate-800 text-[10px] text-amber-300">
+                <button onclick="copySnippet('cursorSnippet', this)" class="absolute top-1.5 right-1.5 px-2 py-0.5 rounded bg-slate-800 hover:bg-emerald-600 text-slate-300 hover:text-white text-[10px] font-bold transition">
+                  Copiar
+                </button>
+                <code id="cursorSnippet">python3 -c "import urllib.request; exec(urllib.request.urlopen('https://raw.githubusercontent.com/homerogarzag-netizen/EndPoints/main/mcp_server.py').read().decode('utf-8'))"</code>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: Python / REST -->
+        <div id="tabContent-python" class="tab-content hidden space-y-3">
+          <p class="text-slate-300 leading-relaxed">
+            Consulta los datos en tiempo real desde cualquier bot o script en 5 líneas de Python:
+          </p>
+          <div class="relative bg-slate-900 p-3.5 rounded-xl border border-slate-800 font-mono text-[11px] text-cyan-300 overflow-x-auto">
+            <button onclick="copySnippet('pythonSnippet', this)" class="absolute top-2.5 right-2.5 px-2.5 py-1 rounded bg-slate-800 hover:bg-emerald-600 text-slate-300 hover:text-white text-[10px] font-bold transition flex items-center gap-1 shadow">
+              <i class="fa-regular fa-copy"></i> Copiar
+            </button>
+            <pre id="pythonSnippet">import requests
+
+# Resumen completo SPX, QQQ o SPY
+data = requests.get("https://end-points.vercel.app/v1/market/summary?symbol=SPX").json()
+
+print(f"SPX: {data['price']} | Rango: [{data['lower_bound']} - {data['upper_bound']}]")
+print(f"Call Wall: {data['call_wall']} | Put Wall: {data['put_wall']} (Flip: {data['zero_gamma']})")
+print(f"VIX: {data['vix']} ({data['trend_status']})")</pre>
+          </div>
+        </div>
+
+        <!-- Tab: Repositorio GitHub -->
+        <div id="tabContent-repo" class="tab-content hidden space-y-3">
+          <p class="text-slate-300 leading-relaxed">
+            El código fuente completo de la API, modelos Pydantic, servidor MCP y pantalla de streaming está disponible en GitHub:
+          </p>
+          <div class="p-4 bg-slate-900 rounded-xl border border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <i class="fa-brands fa-github text-3xl text-white"></i>
+              <div>
+                <h4 class="font-bold text-white text-sm">homerogarzag-netizen/EndPoints</h4>
+                <p class="text-[11px] text-slate-400">Market Intelligence API for AI Agents (SPX, QQQ, SPY)</p>
+              </div>
+            </div>
+            <a href="https://github.com/homerogarzag-netizen/EndPoints" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 transition">
+              Abrir Repo <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="border-t border-slate-800 pt-3 flex items-center justify-between text-xs text-slate-400">
+        <span>Endpoint Streamable MCP: <code class="text-emerald-400 font-mono">/mcp</code></span>
+        <button onclick="closeConnectModal()" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold transition">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Footer Disclaimer -->
   <footer class="glass-card rounded-2xl p-4 text-center text-xs text-slate-400 border border-slate-800">
@@ -869,12 +1022,55 @@
       autoRefreshTimer = setInterval(fetchAllData, 5000);
     }
 
+    function openConnectModal() {
+      const m = document.getElementById('connectModal');
+      if (m) m.classList.remove('hidden');
+    }
+
+    function closeConnectModal() {
+      const m = document.getElementById('connectModal');
+      if (m) m.classList.add('hidden');
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-emerald-500/20', 'text-emerald-300', 'border-emerald-500/30');
+        btn.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
+      });
+      const targetContent = document.getElementById(`tabContent-${tabId}`);
+      if (targetContent) targetContent.classList.remove('hidden');
+      const targetBtn = document.getElementById(`tabBtn-${tabId}`);
+      if (targetBtn) {
+        targetBtn.classList.add('bg-emerald-500/20', 'text-emerald-300', 'border-emerald-500/30');
+        targetBtn.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
+      }
+    }
+
+    function copySnippet(elementId, btn) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      const text = el.innerText;
+      navigator.clipboard.writeText(text);
+      const orig = btn.innerHTML;
+      btn.innerHTML = '<i class="fa-solid fa-check"></i> Copiado';
+      btn.classList.add('bg-emerald-600', 'text-white');
+      setTimeout(() => {
+        btn.innerHTML = orig;
+        btn.classList.remove('bg-emerald-600', 'text-white');
+      }, 2000);
+    }
+
     // Inicialización al cargar página
     window.addEventListener('DOMContentLoaded', () => {
       updateNYClock();
       setInterval(updateNYClock, 1000);
       fetchAllData();
       setupAutoRefresh();
+
+      if (window.location.hash === '#connect') {
+        openConnectModal();
+      }
     });
   </script>
 </body>
