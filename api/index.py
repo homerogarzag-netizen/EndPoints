@@ -68,6 +68,26 @@ async def vercel_path_normalizer(request: Request, call_next):
     return await call_next(request)
 
 
+@app.middleware("http")
+async def add_edge_cache_headers(request: Request, call_next):
+    """
+    Optimiza el consumo de CPU en Vercel habilitando Edge CDN Cache para peticiones GET.
+    Permite que la red perimetral de Vercel responda en 1ms sin invocar funciones de Python.
+    """
+    response = await call_next(request)
+    if request.method == "GET" and response.status_code == 200:
+        path = request.scope.get("path", "")
+        # Endpoints de mercado y MCP: caché perimetral de 10 segundos
+        if path.startswith(("/v1/market/", "/api/v1/market/", "/mcp", "/api/mcp")):
+            if "Cache-Control" not in response.headers:
+                response.headers["Cache-Control"] = "public, max-age=5, s-maxage=10, stale-while-revalidate=20"
+        # Páginas estáticas y documentación
+        elif path in ["/dashboard", "/stream", "/docs", "/llms.txt", "/"]:
+            if "Cache-Control" not in response.headers:
+                response.headers["Cache-Control"] = "public, max-age=60, s-maxage=300"
+    return response
+
+
 LLMS_TXT_PATH = Path(__file__).resolve().parent.parent / "public" / "llms.txt"
 DASHBOARD_HTML_PATH = Path(__file__).resolve().parent / "dashboard.html"
 FALLBACK_DASHBOARD_PATH = Path(__file__).resolve().parent.parent / "public" / "dashboard.html"

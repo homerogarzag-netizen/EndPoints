@@ -1246,36 +1246,38 @@
         const elGex2 = document.getElementById('tickerGexWalls2');
         if (elGex2) elGex2.innerText = gexWallsText;
 
-        // Fetch Multi-Asset Ticker Data (QQQ & SPY)
-        try {
-          const qqqRes = await fetch('/v1/market/summary?symbol=QQQ', { headers: { 'X-Internal-Dashboard': 'true' } });
-          if (qqqRes.ok) {
-            const qqqData = await qqqRes.json();
-            if (qqqData.price) {
-              const qqqStr = `$${qqqData.price.toFixed(2)}`;
-              const tQqq = document.getElementById('tickerQqq');
-              if (tQqq) tQqq.innerText = qqqStr;
-              const tQqq2 = document.getElementById('tickerQqq2');
-              if (tQqq2) tQqq2.innerText = qqqStr;
-            }
-          }
-          const spyRes = await fetch('/v1/market/summary?symbol=SPY', { headers: { 'X-Internal-Dashboard': 'true' } });
-          if (spyRes.ok) {
-            const spyData = await spyRes.json();
-            if (spyData.price) {
-              const spyStr = `$${spyData.price.toFixed(2)}`;
-              const tSpy = document.getElementById('tickerSpy');
-              if (tSpy) tSpy.innerText = spyStr;
-              const tSpy2 = document.getElementById('tickerSpy2');
-              if (tSpy2) tSpy2.innerText = spyStr;
-            }
-          }
-        } catch (err) {
-          // ignore network hiccups
-        }
-
       } catch (e) {
         console.error('Error in live market poll:', e);
+      }
+    }
+
+    // Secondary Multi-Asset Ticker Polling (Every 30s to preserve CPU)
+    async function fetchMultiAssetTickers() {
+      try {
+        const qqqRes = await fetch('/v1/market/summary?symbol=QQQ', { headers: { 'X-Internal-Dashboard': 'true' } });
+        if (qqqRes.ok) {
+          const qqqData = await qqqRes.json();
+          if (qqqData.price) {
+            const qqqStr = `$${qqqData.price.toFixed(2)}`;
+            const tQqq = document.getElementById('tickerQqq');
+            if (tQqq) tQqq.innerText = qqqStr;
+            const tQqq2 = document.getElementById('tickerQqq2');
+            if (tQqq2) tQqq2.innerText = qqqStr;
+          }
+        }
+        const spyRes = await fetch('/v1/market/summary?symbol=SPY', { headers: { 'X-Internal-Dashboard': 'true' } });
+        if (spyRes.ok) {
+          const spyData = await spyRes.json();
+          if (spyData.price) {
+            const spyStr = `$${spyData.price.toFixed(2)}`;
+            const tSpy = document.getElementById('tickerSpy');
+            if (tSpy) tSpy.innerText = spyStr;
+            const tSpy2 = document.getElementById('tickerSpy2');
+            if (tSpy2) tSpy2.innerText = spyStr;
+          }
+        }
+      } catch (err) {
+        // ignore network hiccups
       }
     }
 
@@ -1390,7 +1392,10 @@
       setInterval(updateClocks, 1000);
 
       fetchLiveMarketData();
-      setInterval(fetchLiveMarketData, 5000);
+      setInterval(fetchLiveMarketData, 10000); // Polling principal cada 10s optimizado con Edge Cache
+
+      fetchMultiAssetTickers();
+      setInterval(fetchMultiAssetTickers, 30000); // Tickers secundarios cada 30s
 
       setInterval(tickAgentTimer, 1000);
       focusAgent(0); // Default to CONTADOR matching the reference screenshot!

@@ -69,8 +69,8 @@
         <span>Auto-refresco:</span>
         <select id="refreshInterval" class="bg-slate-800 text-white border border-slate-600 rounded px-1.5 py-0.5 text-xs outline-none focus:border-emerald-500">
           <option value="0">Pausado</option>
-          <option value="5" selected>5 seg</option>
-          <option value="15">15 seg</option>
+          <option value="5">5 seg</option>
+          <option value="15" selected>15 seg</option>
           <option value="30">30 seg</option>
         </select>
       </label>
@@ -1018,8 +1018,8 @@ print(f"VIX: {data['vix']} ({data['trend_status']})")</pre>
         }
       });
 
-      // Intervalo por defecto de 5s
-      autoRefreshTimer = setInterval(fetchAllData, 5000);
+      // Intervalo por defecto de 15s (optimizado para consumo de CPU)
+      autoRefreshTimer = setInterval(fetchAllData, 15000);
     }
 
     function openConnectModal() {
