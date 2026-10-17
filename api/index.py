@@ -126,6 +126,10 @@ async def root(request: Request, background_tasks: BackgroundTasks):
     start = time.perf_counter()
     duration_ms = (time.perf_counter() - start) * 1000
     
+    accept = request.headers.get("accept", "")
+    if "text/html" in accept and "application/json" not in accept:
+        return RedirectResponse(url="/dashboard", status_code=307)
+
     if should_record_telemetry(request):
         background_tasks.add_task(
             record_telemetry,
